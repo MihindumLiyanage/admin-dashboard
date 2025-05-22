@@ -1,0 +1,64 @@
+{
+  "name": "admin-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A modern admin dashboard built with Next.js 15, React 19, and Carbon Design System.",
+  "author": "Your Name or Company",
+  "license": "MIT",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build && node ./scripts/license",
+    "start": "next start",
+    "lint": "next lint && stylelint \"**/*.{css,scss}\"",
+    "format": "prettier --write .",
+    "postinstall": "husky install"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn lint && yarn format"
+    }
+  },
+  "dependencies": {
+    "@carbon/charts": "^1.23.8",
+    "@carbon/charts-react": "^1.23.8",
+    "@carbon/colors": "^11.28.0",
+    "@carbon/elements": "^11.57.0",
+    "@carbon/grid": "^11.29.0",
+    "@carbon/icons-react": "^11.60.0",
+    "@carbon/react": "^1.83.0",
+    "@carbon/styles": "^1.82.0",
+    "@carbon/themes": "^11.53.0",
+    "axios": "^1.9.0",
+    "d3": "^7.9.0",
+    "date-fns": "^4.1.0",
+    "js-cookie": "^3.0.5",
+    "lodash": "^4.17.21",
+    "next": "15.3.2",
+    "prop-types": "^15.7.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-hook-form": "^7.56.4",
+    "@hookform/resolvers": "^5.0.1",
+    "yup": "^1.6.1"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@next/eslint-plugin-next": "^15.3.2",
+    "@types/js-cookie": "^3.0.6",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.21",
+    "cross-env": "^7.0.3",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.2",
+    "eslint-config-prettier": "^10.1.5",
+    "husky": "^9.1.7",
+    "prettier": "^3.5.3",
+    "prepend-file": "^2.0.1",
+    "sass": "^1.89.0",
+    "stylelint": "^16.19.1",
+    "stylelint-config-standard-scss": "^15.0.1",
+    "typescript": "^5.4.0"
+  }
+}
