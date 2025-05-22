@@ -9,7 +9,7 @@ import {
 import { Moon, Sun, UserAvatar } from "@carbon/icons-react";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useAuth } from "../../contexts/AuthContext";
-import styles from "./Header.module.scss";
+import styles from "../../styles/layouts/header.module.scss";
 
 export const Header = () => {
   const { toggleTheme, theme } = useTheme();

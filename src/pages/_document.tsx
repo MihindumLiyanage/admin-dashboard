@@ -4,7 +4,13 @@ export default class MyDocument extends Document {
   render() {
     return (
       <Html lang="en">
-        <Head />
+        <Head>
+          <link rel="icon" href="/images/icon.png" />
+          <meta
+            name="description"
+            content="Dashboard with Carbon Design System"
+          />
+        </Head>
         <body>
           <Main />
           <NextScript />

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import Image from "next/image";
 import {
   SideNav,
@@ -12,7 +13,7 @@ import {
 import { ChevronRight, Menu } from "@carbon/icons-react";
 import { useSidebar } from "../../contexts/SidebarContext";
 import { sidebarItems } from "../../data/sidebarItems";
-import styles from "./Sidebar.module.scss";
+import styles from "../../styles/layouts/sidebar.module.scss";
 
 export const Sidebar = () => {
   const { isOpen, toggle } = useSidebar();
@@ -49,19 +50,17 @@ export const Sidebar = () => {
                 renderIcon={item.icon}
               >
                 {item.subItems.map((sub) => (
-                  <SideNavMenuItem href={sub.path} key={sub.name}>
-                    {sub.name}
-                  </SideNavMenuItem>
+                  <Link key={sub.name} href={sub.path} passHref legacyBehavior>
+                    <SideNavMenuItem as="a">{sub.name}</SideNavMenuItem>
+                  </Link>
                 ))}
               </SideNavMenu>
             ) : (
-              <SideNavLink
-                key={item.id}
-                href={item.href}
-                renderIcon={item.icon}
-              >
-                {item.label}
-              </SideNavLink>
+              <Link key={item.id} href={item.href} passHref legacyBehavior>
+                <SideNavLink as="a" renderIcon={item.icon}>
+                  {item.label}
+                </SideNavLink>
+              </Link>
             )
           )}
         </SideNavItems>
