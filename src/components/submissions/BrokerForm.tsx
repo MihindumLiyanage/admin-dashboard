@@ -141,7 +141,7 @@ function BrokerForm({ application, onUpdate, onNext }: BrokerFormProps) {
               htmlFor="broker_organization_address-input"
               className={styles.label}
             >
-              Organization Address
+              Address
             </label>
             <Controller
               name="address"
@@ -164,7 +164,7 @@ function BrokerForm({ application, onUpdate, onNext }: BrokerFormProps) {
               htmlFor="broker_organization_city-input"
               className={styles.label}
             >
-              Organization City
+              City
             </label>
             <Controller
               name="city"
@@ -187,7 +187,7 @@ function BrokerForm({ application, onUpdate, onNext }: BrokerFormProps) {
               htmlFor="broker_organization_zipcode-input"
               className={styles.label}
             >
-              Organization Zipcode
+              Zipcode
             </label>
             <Controller
               name="zipcode"
@@ -216,7 +216,7 @@ function BrokerForm({ application, onUpdate, onNext }: BrokerFormProps) {
               htmlFor="broker_organization_state-input"
               className={styles.label}
             >
-              Organization State
+              State
             </label>
             <Controller
               name="state"
