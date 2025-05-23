@@ -1,0 +1,8 @@
+export enum ApplicationStatus {
+  DEFAULT = "DEFAULT",
+  CREATED = "CREATED",
+  APPROVED = "APPROVED",
+  DECLINED = "DECLINED",
+  ACCEPTED = "ACCEPTED",
+  REJECTED = "REJECTED",
+}

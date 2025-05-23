@@ -1,0 +1,89 @@
+@use "@carbon/react/scss/themes";
+
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.header {
+  position: sticky;
+  background-color: var(--cds-ui-background);
+  z-index: 20;
+  padding: 1rem;
+  border-bottom: 1px solid var(--cds-border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pageTitle {
+  text-align: right;
+  h3 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+}
+
+.tile {
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background-color: var(--cds-layer);
+  padding: 1.5rem;
+  margin: 0 auto;
+  max-width: 1200px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.formRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  label {
+    min-width: 160px;
+    font-weight: 600;
+    color: var(--cds-text-primary);
+  }
+}
+
+.input {
+  background-color: var(--cds-field);
+  color: var(--cds-text-primary);
+  border: 1px solid var(--cds-border-strong);
+  border-radius: 5px;
+  padding: 6px 10px;
+  font-size: 0.875rem;
+  transition: border-color 0.2s ease;
+
+  :focus {
+    border-color: var(--cds-focus);
+    outline: none;
+    box-shadow: 0 0 5px rgba(85, 150, 230, 0.3);
+  }
+
+  input {
+    padding: 0.5rem;
+    font-size: 1rem;
+    border-radius: 6px;
+  }
+}
+
+.formFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
