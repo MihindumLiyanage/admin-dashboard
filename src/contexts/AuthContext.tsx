@@ -8,7 +8,7 @@ import React, {
   useEffect,
 } from "react";
 import Cookies from "js-cookie";
-import { User } from "../types/user";
+import { User } from "@/types/user";
 
 interface AuthContextType {
   user: User | null;

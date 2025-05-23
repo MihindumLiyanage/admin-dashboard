@@ -11,9 +11,9 @@ import {
   SideNavMenuItem,
 } from "@carbon/react";
 import { ChevronRight, Menu } from "@carbon/icons-react";
-import { useSidebar } from "../../contexts/SidebarContext";
-import { sidebarItems } from "../../data/sidebarItems";
-import styles from "../../styles/layouts/sidebar.module.scss";
+import { useSidebar } from "@/contexts/SidebarContext";
+import { sidebarItems } from "@/data/sidebarItems";
+import styles from "@/styles/layouts/sidebar.module.scss";
 
 export const Sidebar = () => {
   const { isOpen, toggle } = useSidebar();

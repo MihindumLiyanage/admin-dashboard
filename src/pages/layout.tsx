@@ -2,10 +2,10 @@
 
 import React from "react";
 import Head from "next/head";
-import { Header } from "../layouts/header/Header";
-import { Sidebar } from "../layouts/sidebar/Sidebar";
-import styles from "../styles/layouts/layout.module.scss";
-import { useSidebar } from "../contexts/SidebarContext";
+import { Header } from "@/components/layouts/Header";
+import { Sidebar } from "@/components/layouts/Sidebar";
+import styles from "@/styles/layouts/layout.module.scss";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 interface LayoutProps {
   children: React.ReactNode;

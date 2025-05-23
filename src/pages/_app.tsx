@@ -1,8 +1,8 @@
 import type { AppProps } from "next/app";
 import "@carbon/styles/css/styles.css";
-import "../styles/global.scss";
-import { AppProviders } from "../contexts/AppProviders";
-import { Layout } from "./Layout";
+import "@/styles/global.scss";
+import { AppProviders } from "@/contexts/AppProviders";
+import { Layout } from "./layout";
 
 type NextPageWithTitle = AppProps["Component"] & {
   title?: string;
