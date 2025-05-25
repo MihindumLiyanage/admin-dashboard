@@ -50,17 +50,19 @@ export const Sidebar = () => {
                 renderIcon={item.icon}
               >
                 {item.subItems.map((sub) => (
-                  <Link key={sub.name} href={sub.path} passHref legacyBehavior>
-                    <SideNavMenuItem as="a">{sub.name}</SideNavMenuItem>
-                  </Link>
+                  <SideNavMenuItem key={sub.name}>
+                    <Link href={sub.path}>{sub.name}</Link>
+                  </SideNavMenuItem>
                 ))}
               </SideNavMenu>
             ) : (
-              <Link key={item.id} href={item.href} passHref legacyBehavior>
-                <SideNavLink as="a" renderIcon={item.icon}>
-                  {item.label}
-                </SideNavLink>
-              </Link>
+              <SideNavLink
+                key={item.id}
+                renderIcon={item.icon}
+                href={item.href}
+              >
+                {item.label}
+              </SideNavLink>
             )
           )}
         </SideNavItems>

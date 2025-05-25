@@ -1,6 +1,10 @@
 import { Application } from "@/types/application";
 
 export const DEFAULT_APPLICATION: Application = {
+  submission_reference: {
+    id: "",
+    version: "",
+  },
   broker: {
     name: "",
     organization: "",
@@ -9,26 +13,25 @@ export const DEFAULT_APPLICATION: Application = {
     state: "",
     zipcode: "",
   },
+  carrier: "Lloyd",
   insured: {
     name: "",
     address: "",
     city: "",
     state: "",
     zipcode: "",
-    naics: [""],
+    naics: [],
   },
   financials: {
-    employee_count: "",
-    revenue: "",
-    current_assets: "",
-    current_liabilities: "",
-    total_assets: "",
-    total_liabilities: "",
-    net_income_loss: "",
+    employee_count: undefined,
+    revenue: undefined,
+    current_assets: undefined,
+    current_liabilities: undefined,
+    total_assets: undefined,
+    total_liabilities: undefined,
+    net_income_loss: undefined,
+    retained_earnings: undefined,
+    end_ebit: undefined,
   },
   coverage: [],
-  submission_reference: {
-    id: "",
-    version: "",
-  },
 };

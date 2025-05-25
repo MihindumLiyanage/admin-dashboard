@@ -4,7 +4,8 @@ import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { TextInput, ComboBox, Grid, Column } from "@carbon/react";
+import { TextInput, ComboBox, Grid, Column, Button } from "@carbon/react";
+import { ArrowRight } from "@carbon/icons-react";
 import { stateList } from "@/data/stateList";
 import styles from "@/styles/pages/submissions.module.scss";
 
@@ -12,6 +13,9 @@ interface BrokerFormProps {
   application: any;
   onUpdate: (application: any) => void;
   onNext: () => void;
+  onBack: () => void;
+  isFirstStep: boolean;
+  isLastStep: boolean;
 }
 
 const schema = yup.object({
@@ -49,12 +53,12 @@ function BrokerForm({ application, onUpdate, onNext }: BrokerFormProps) {
     mode: "onChange",
     resolver: yupResolver(schema),
     defaultValues: {
-      name: application.broker.name || "",
-      organization: application.broker.organization || "",
-      address: application.broker.address || "",
-      city: application.broker.city || "",
-      state: application.broker.state || "",
-      zipcode: application.broker.zipcode || "",
+      name: application?.broker?.name || "",
+      organization: application?.broker?.organization || "",
+      address: application?.broker?.address || "",
+      city: application?.broker?.city || "",
+      state: application?.broker?.state || "",
+      zipcode: application?.broker?.zipcode || "",
     },
   });
 
@@ -65,7 +69,7 @@ function BrokerForm({ application, onUpdate, onNext }: BrokerFormProps) {
       const filtered = stateList.filter((state) =>
         state.toLowerCase().startsWith(input.toLowerCase())
       );
-      setFilteredStates(filtered);
+      setFilteredStates(filtered.length ? filtered : ["No matches found"]);
     }
   };
 
@@ -86,142 +90,93 @@ function BrokerForm({ application, onUpdate, onNext }: BrokerFormProps) {
   };
 
   return (
-    <Grid className={styles.formGrid}>
-      <Column sm={4} md={8} lg={12}>
-        <form
-          className={styles.form}
-          onSubmit={handleSubmit(onSubmit)}
-          noValidate
-        >
-          <div className={styles.formRow}>
-            <label htmlFor="broker_name-input" className={styles.label}>
-              Broker Name
-            </label>
-            <Controller
-              name="name"
-              control={control}
-              render={({ field }) => (
-                <TextInput
-                  id="broker_name-input"
-                  placeholder="Enter Broker Name"
-                  {...field}
-                  labelText=""
-                  invalid={!!errors.name}
-                  invalidText={errors.name?.message as string}
-                  className={styles.input}
-                />
-              )}
-            />
-          </div>
-          <div className={styles.formRow}>
-            <label
-              htmlFor="broker_organization_name-input"
-              className={styles.label}
-            >
-              Organization Name
-            </label>
-            <Controller
-              name="organization"
-              control={control}
-              render={({ field }) => (
-                <TextInput
-                  labelText={""}
-                  id="broker_organization_name-input"
-                  placeholder="Enter Organization Name"
-                  {...field}
-                  invalid={!!errors.organization}
-                  invalidText={errors.organization?.message as string}
-                  className={styles.input}
-                />
-              )}
-            />
-          </div>
-          <div className={styles.formRow}>
-            <label
-              htmlFor="broker_organization_address-input"
-              className={styles.label}
-            >
-              Address
-            </label>
-            <Controller
-              name="address"
-              control={control}
-              render={({ field }) => (
-                <TextInput
-                  labelText={""}
-                  id="broker_organization_address-input"
-                  placeholder="Enter Organization Address"
-                  {...field}
-                  invalid={!!errors.address}
-                  invalidText={errors.address?.message as string}
-                  className={styles.input}
-                />
-              )}
-            />
-          </div>
-          <div className={styles.formRow}>
-            <label
-              htmlFor="broker_organization_city-input"
-              className={styles.label}
-            >
-              City
-            </label>
-            <Controller
-              name="city"
-              control={control}
-              render={({ field }) => (
-                <TextInput
-                  labelText={""}
-                  id="broker_organization_city-input"
-                  placeholder="Enter Organization City"
-                  {...field}
-                  invalid={!!errors.city}
-                  invalidText={errors.city?.message as string}
-                  className={styles.input}
-                />
-              )}
-            />
-          </div>
-          <div className={styles.formRow}>
-            <label
-              htmlFor="broker_organization_zipcode-input"
-              className={styles.label}
-            >
-              Zipcode
-            </label>
-            <Controller
-              name="zipcode"
-              control={control}
-              render={({ field }) => (
-                <TextInput
-                  id="broker_organization_zipcode-input"
-                  placeholder="Enter Zip Code | 5 Digits"
-                  {...field}
-                  labelText=""
-                  invalid={!!errors.zipcode}
-                  invalidText={errors.zipcode?.message as string}
-                  className={styles.input}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (/^\d{0,5}$/.test(val)) {
-                      field.onChange(val);
-                    }
-                  }}
-                />
-              )}
-            />
-          </div>
-          <div className={styles.formRow}>
-            <label
-              htmlFor="broker_organization_state-input"
-              className={styles.label}
-            >
-              State
-            </label>
-            <Controller
-              name="state"
-              control={control}
-              render={({ field }) => (
+    <form
+      className={styles.form}
+      onSubmit={handleSubmit(onSubmit)}
+      noValidate
+      aria-label="Broker information form"
+    >
+      <Grid condensed className={styles.grid}>
+        <Column sm={4} md={8} lg={5} className={styles.formColumn}>
+          <Controller
+            name="name"
+            control={control}
+            render={({ field }) => (
+              <TextInput
+                id="broker_name-input"
+                labelText="Broker Name"
+                placeholder="Enter Broker Name"
+                {...field}
+                invalid={!!errors.name}
+                invalidText={errors.name?.message as string}
+                light={false}
+              />
+            )}
+          />
+        </Column>
+        <Column sm={4} md={8} lg={7} className={styles.formColumn}>
+          <Controller
+            name="organization"
+            control={control}
+            render={({ field }) => (
+              <TextInput
+                id="broker_organization_name-input"
+                labelText="Organization Name"
+                placeholder="Enter Organization Name"
+                {...field}
+                invalid={!!errors.organization}
+                invalidText={errors.organization?.message as string}
+                light={false}
+              />
+            )}
+          />
+        </Column>
+        <Column sm={4} md={8} lg={12} className={styles.formColumn}>
+          <Controller
+            name="address"
+            control={control}
+            render={({ field }) => (
+              <TextInput
+                id="broker_organization_address-input"
+                labelText="Address"
+                placeholder="Enter Organization Address"
+                {...field}
+                invalid={!!errors.address}
+                invalidText={errors.address?.message as string}
+                light={false}
+              />
+            )}
+          />
+        </Column>
+        <Column sm={4} md={8} lg={4} className={styles.formColumn}>
+          <Controller
+            name="city"
+            control={control}
+            render={({ field }) => (
+              <TextInput
+                id="broker_organization_city-input"
+                labelText="City"
+                placeholder="Enter Organization City"
+                {...field}
+                invalid={!!errors.city}
+                invalidText={errors.city?.message as string}
+                light={false}
+              />
+            )}
+          />
+        </Column>
+        <Column sm={4} md={8} lg={4} className={styles.formColumn}>
+          <Controller
+            name="state"
+            control={control}
+            render={({ field }) => (
+              <>
+                <label
+                  htmlFor="broker_organization_state-input"
+                  className={styles.label}
+                >
+                  State
+                </label>
                 <ComboBox
                   id="broker_organization_state-input"
                   items={filteredStates}
@@ -230,19 +185,45 @@ function BrokerForm({ application, onUpdate, onNext }: BrokerFormProps) {
                   onChange={({ selectedItem }) =>
                     field.onChange(selectedItem || "")
                   }
-                  onInputChange={(input) => {
-                    handleStateInputChange(input);
-                  }}
-                  className={styles.input}
+                  onInputChange={handleStateInputChange}
                   invalid={!!errors.state}
                   invalidText={errors.state?.message as string}
+                  aria-label="State"
                 />
-              )}
-            />
-          </div>
-        </form>
-      </Column>
-    </Grid>
+              </>
+            )}
+          />
+        </Column>
+        <Column sm={4} md={8} lg={4} className={styles.formColumn}>
+          <Controller
+            name="zipcode"
+            control={control}
+            render={({ field }) => (
+              <TextInput
+                id="broker_organization_zipcode-input"
+                labelText="Zipcode"
+                placeholder="Enter Zip Code | 5 Digits"
+                {...field}
+                invalid={!!errors.zipcode}
+                invalidText={errors.zipcode?.message as string}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (/^\d{0,5}$/.test(val)) {
+                    field.onChange(val);
+                  }
+                }}
+                light={false}
+              />
+            )}
+          />
+        </Column>
+      </Grid>
+      <div className={styles.formFooter}>
+        <Button kind="primary" renderIcon={ArrowRight} type="submit">
+          Next
+        </Button>
+      </div>
+    </form>
   );
 }
 

@@ -7,16 +7,11 @@
   "license": "MIT",
   "scripts": {
     "dev": "next dev",
-    "build": "next build && node ./scripts/license",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint && stylelint \"**/*.{css,scss}\"",
     "format": "prettier --write .",
     "postinstall": "husky install"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "yarn lint && yarn format"
-    }
   },
   "dependencies": {
     "@carbon/charts": "^1.23.8",
@@ -34,7 +29,6 @@
     "js-cookie": "^3.0.5",
     "lodash": "^4.17.21",
     "next": "15.3.2",
-    "prop-types": "^15.7.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.56.4",
@@ -49,7 +43,6 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.21",
-    "cross-env": "^7.0.3",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
     "eslint-config-prettier": "^10.1.5",

@@ -1,16 +1,13 @@
 "use client";
 
-Submissions.title = "Submissions";
 import { useState } from "react";
 import {
   Grid,
-  Button,
-  ProgressIndicator,
-  ProgressStep,
   Tile,
   Column,
+  ProgressIndicator,
+  ProgressStep,
 } from "@carbon/react";
-import { ArrowLeft, ArrowRight } from "@carbon/icons-react";
 
 import BrokerForm from "@/components/submissions/BrokerForm";
 import InsuredForm from "@/components/submissions/InsuredForm";
@@ -30,44 +27,19 @@ export default function Submissions() {
     { label: "Decision", Component: DecisionForm },
   ];
 
-  const handleNext = () => {
+  const onNext = () => {
     if (step < sections.length - 1) {
-      setStep((prev) => prev + 1);
+      setStep(step + 1);
     }
   };
 
-  const renderForm = () => {
-    const { Component } = sections[step] || {};
-    return (
-      <Tile className={styles.tile}>
-        <Component
-          application={application}
-          onUpdate={setApplication}
-          onNext={handleNext}
-        />
-        <div className={styles.formFooter}>
-          {step > 0 && (
-            <Button
-              kind="secondary"
-              renderIcon={ArrowLeft}
-              onClick={() => setStep((s) => s - 1)}
-            >
-              Back
-            </Button>
-          )}
-          {step < sections.length - 1 && (
-            <Button
-              kind="primary"
-              renderIcon={ArrowRight}
-              onClick={() => setStep((s) => s + 1)}
-            >
-              Next
-            </Button>
-          )}
-        </div>
-      </Tile>
-    );
+  const onBack = () => {
+    if (step > 0) {
+      setStep(step - 1);
+    }
   };
+
+  const { Component } = sections[step];
 
   return (
     <Grid fullWidth className={styles.container}>
@@ -79,7 +51,7 @@ export default function Submissions() {
                 <ProgressStep
                   key={s.label}
                   label={s.label}
-                  description={`${s.label} details`}
+                  description={s.label}
                   current={i === step}
                   complete={i < step}
                 />
@@ -91,9 +63,17 @@ export default function Submissions() {
           </div>
         </div>
       </Column>
-
       <Column lg={12} md={8} sm={4}>
-        {renderForm()}
+        <Tile className={styles.tile}>
+          <Component
+            application={application}
+            onUpdate={setApplication}
+            onNext={onNext}
+            onBack={onBack}
+            isFirstStep={step === 0}
+            isLastStep={step === sections.length - 1}
+          />
+        </Tile>
       </Column>
     </Grid>
   );

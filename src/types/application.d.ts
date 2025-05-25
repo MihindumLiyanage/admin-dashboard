@@ -1,10 +1,41 @@
-export interface Broker {
-  name: string;
-  organization: string;
+export interface Address {
   address: string;
   city: string;
   state: string;
   zipcode: string;
+}
+
+export interface Broker extends Address {
+  name: string;
+  organization: string;
+}
+
+export interface Insured extends Address {
+  name: string;
+  naics: string[];
+}
+
+export interface Finance {
+  employee_count?: number;
+  revenue?: number;
+  current_assets?: number;
+  current_liabilities?: number;
+  total_assets?: number;
+  total_liabilities?: number;
+  net_income_loss?: number;
+  retained_earnings?: number;
+  end_ebit?: number;
+}
+
+export interface Reference {
+  id: string;
+  version: string;
+}
+
+export interface Claims {
+  count: number;
+  payout: number;
+  remarks: string;
 }
 
 export type CoverageType = "D&O" | "EPL" | "FID";
@@ -13,39 +44,14 @@ export interface Coverage {
   type: CoverageType;
   limit: number;
   retention: number;
-  claims: { count: number; payout: number; remarks: string };
-}
-
-export interface Financials {
-  employee_count: string;
-  revenue: string;
-  current_assets: string;
-  current_liabilities: string;
-  total_assets: string;
-  total_liabilities: string;
-  net_income_loss: string;
-  retained_earning?: string;
-  end_ebit?: string;
-}
-
-export interface Insured {
-  name: string;
-  address: string;
-  city: string;
-  state: string;
-  zipcode: string;
-  naics: string[];
-}
-
-export interface SubmissionReference {
-  id: string;
-  version: string;
+  claims: Claims;
 }
 
 export interface Application {
+  submission_reference: Reference;
   broker: Broker;
+  carrier: string;
   insured: Insured;
-  financials: Financials;
+  financials: Finance;
   coverage: Coverage[];
-  submission_reference: SubmissionReference;
 }
