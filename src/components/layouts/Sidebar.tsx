@@ -22,8 +22,15 @@ export const Sidebar = () => {
     <aside className={`${styles.sidebar} ${!isOpen ? styles.collapsed : ""}`}>
       <div className={styles.sidebarHeader}>
         {isOpen && (
-          <Image src="/images/logo.png" alt="Logo" width={150} height={32} />
+          <Image
+            className={styles.logo}
+            src="/images/logo.png"
+            alt="Logo"
+            width={150}
+            height={32}
+          />
         )}
+
         <button
           onClick={() => toggle()}
           className={styles.toggleButton}

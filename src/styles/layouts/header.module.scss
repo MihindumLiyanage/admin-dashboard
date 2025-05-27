@@ -1,3 +1,14 @@
+@use "@carbon/styles/scss/spacing" as *;
+@use "@carbon/styles/scss/type" as *;
+@use "@carbon/styles/scss/colors" as *;
+@use "@carbon/styles/scss/utilities/convert" as *;
+
 .header {
   position: relative;
+  padding: 0 spacing(05);
+  background-color: var(--cds-ui-01);
+  border-bottom: 1px solid var(--cds-border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }

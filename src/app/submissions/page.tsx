@@ -12,7 +12,7 @@ import {
 import BrokerForm from "@/components/submissions/BrokerForm";
 import InsuredForm from "@/components/submissions/InsuredForm";
 import FinancialForm from "@/components/submissions/FinancialForm";
-import DecisionForm from "@/components/submissions/DecisionForm";
+import Decision from "@/components/submissions/Decision";
 import { DEFAULT_APPLICATION } from "@/data/defaultApplication";
 import styles from "@/styles/pages/submissions.module.scss";
 
@@ -24,7 +24,7 @@ export default function Submissions() {
     { label: "Broker", Component: BrokerForm },
     { label: "Insured", Component: InsuredForm },
     { label: "Financial", Component: FinancialForm },
-    { label: "Decision", Component: DecisionForm },
+    { label: "Decision", Component: Decision },
   ];
 
   const onNext = () => {
@@ -59,7 +59,7 @@ export default function Submissions() {
             </ProgressIndicator>
           </div>
           <div className={styles.pageTitle}>
-            <h3>{sections[step]?.label} Details</h3>
+            <h3>{sections[step]?.label} Page</h3>
           </div>
         </div>
       </Column>
