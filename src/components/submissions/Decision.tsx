@@ -137,6 +137,17 @@ function Decision({ application, onBack, onNext, onUpdate }: DecisionProps) {
               </p>
             </Column>
 
+            <Column sm={4} md={4} lg={4}>
+              <h3 className={styles.sectionTitle}>Financial</h3>
+              <p>
+                <strong>Revenue:</strong> {application.financials?.revenue}
+              </p>
+              <p>
+                <strong>Employee Count:</strong>{" "}
+                {application.financials?.employee_count}
+              </p>
+            </Column>
+
             <Column sm={4} md={4} lg={3}>
               <h3 className={styles.sectionTitle}>Decision</h3>
               <p>
@@ -149,18 +160,7 @@ function Decision({ application, onBack, onNext, onUpdate }: DecisionProps) {
               )}
             </Column>
 
-            <Column sm={4} md={4} lg={3}>
-              <h3 className={styles.sectionTitle}>Financial</h3>
-              <p>
-                <strong>Revenue:</strong> {application.financials?.revenue}
-              </p>
-              <p>
-                <strong>Employee Count:</strong>{" "}
-                {application.financials?.employee_count}
-              </p>
-            </Column>
-
-            <Column sm={4} md={4} lg={3}>
+            <Column sm={4} md={4} lg={2}>
               <h3 className={styles.sectionTitle}>Premium</h3>
               <p className={styles.premiumAmount}>$500</p>
             </Column>
