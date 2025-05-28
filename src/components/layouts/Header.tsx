@@ -5,6 +5,8 @@ import {
   Header as CarbonHeader,
   HeaderGlobalBar,
   HeaderGlobalAction,
+  OverflowMenu,
+  OverflowMenuItem,
 } from "@carbon/react";
 import { Moon, Sun, UserAvatar } from "@carbon/icons-react";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -13,7 +15,7 @@ import styles from "@/styles/layouts/header.module.scss";
 
 export const Header = () => {
   const { toggleTheme, theme } = useTheme();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   return (
     <CarbonHeader aria-label="Admin Dashboard Header" className={styles.header}>
@@ -25,10 +27,18 @@ export const Header = () => {
         >
           {theme === "g100" ? <Sun size={20} /> : <Moon size={20} />}
         </HeaderGlobalAction>
-        <HeaderGlobalAction aria-label="User Profile" tooltipAlignment="end">
-          <UserAvatar size={20} />
-          <span className={styles.username}>{user?.name}</span>
-        </HeaderGlobalAction>
+
+        <OverflowMenu
+          ariaLabel="User menu"
+          flipped
+          renderIcon={UserAvatar}
+          iconDescription="Open user menu"
+        >
+          <OverflowMenuItem disabled>
+            <span className={styles.username}>{user?.name}</span>
+          </OverflowMenuItem>
+          <OverflowMenuItem onClick={logout} itemText="Logout" />
+        </OverflowMenu>
       </HeaderGlobalBar>
     </CarbonHeader>
   );

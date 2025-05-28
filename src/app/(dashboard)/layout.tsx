@@ -1,3 +1,4 @@
+// src/app/dashboard/layout.tsx
 "use client";
 
 import React from "react";
@@ -6,7 +7,7 @@ import { Header } from "@/components/layouts/Header";
 import { Sidebar } from "@/components/layouts/Sidebar";
 import styles from "@/styles/layouts/layout.module.scss";
 
-export default function LayoutWrapper({
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
