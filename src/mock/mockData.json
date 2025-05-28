@@ -1,0 +1,88 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "name": "Alice Johnson",
+      "email": "alice@example.com",
+      "password": "alice123"
+    },
+    {
+      "id": "2",
+      "name": "Bob Smith",
+      "email": "bob@example.com",
+      "password": "bob123"
+    }
+  ],
+  "activity": [
+    {
+      "id": "1",
+      "name": "John Doe",
+      "version": "v1.0",
+      "coverage": "Full",
+      "decision": "ACCEPTED"
+    },
+    {
+      "id": "2",
+      "name": "Jane Smith",
+      "version": "v1.1",
+      "coverage": "Partial",
+      "decision": "REJECTED"
+    },
+    {
+      "id": "3",
+      "name": "Alice Johnson",
+      "version": "v2.0",
+      "coverage": "Full",
+      "decision": "ACCEPTED"
+    },
+    {
+      "id": "4",
+      "name": "Bob Brown",
+      "version": "v2.1",
+      "coverage": "None",
+      "decision": "REJECTED"
+    },
+    {
+      "id": "5",
+      "name": "Charlie Davis",
+      "version": "v3.0",
+      "coverage": "Full",
+      "decision": "ACCEPTED"
+    },
+    {
+      "id": "6",
+      "name": "Diana Evans",
+      "version": "v3.1",
+      "coverage": "Partial",
+      "decision": "REJECTED"
+    },
+    {
+      "id": "7",
+      "name": "Frank Green",
+      "version": "v3.2",
+      "coverage": "None",
+      "decision": "REJECTED"
+    },
+    {
+      "id": "8",
+      "name": "Grace Hall",
+      "version": "v4.0",
+      "coverage": "Full",
+      "decision": "ACCEPTED"
+    },
+    {
+      "id": "9",
+      "name": "Henry Ivy",
+      "version": "v4.1",
+      "coverage": "Partial",
+      "decision": "REJECTED"
+    },
+    {
+      "id": "10",
+      "name": "Isla Jenkins",
+      "version": "v5.0",
+      "coverage": "Full",
+      "decision": "ACCEPTED"
+    }
+  ]
+}
