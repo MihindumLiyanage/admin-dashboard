@@ -8,8 +8,6 @@ import styles from "@/styles/pages/submissions.module.scss";
 interface DecisionProps {
   application: any;
   onUpdate: (application: any) => void;
-  onNext: () => void;
-  onBack: () => void;
 }
 
 interface RiskResponse {
@@ -17,7 +15,7 @@ interface RiskResponse {
   explanation: string;
 }
 
-function Decision({ application, onBack, onNext, onUpdate }: DecisionProps) {
+function Decision({ application, onUpdate }: DecisionProps) {
   const [open, setOpen] = useState(false);
   const [declineReason, setDeclineReason] = useState("");
   const [riskResponse, setRiskResponse] = useState<RiskResponse>({

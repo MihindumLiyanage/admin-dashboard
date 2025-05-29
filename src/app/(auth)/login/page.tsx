@@ -45,7 +45,7 @@ export default function LoginPage() {
       setSuccess("You have been successfully logged in.");
 
       setTimeout(() => {
-        router.push("/");
+        router.push("/dashboard");
       }, 1500);
     } catch (err: any) {
       console.error("Login error:", err);
@@ -56,6 +56,12 @@ export default function LoginPage() {
   return (
     <div className={styles.container}>
       <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+        <img
+          src="/images/logo.png"
+          alt="Login Illustration"
+          className={styles.heroImage}
+          loading="lazy"
+        />
         <h1>Login</h1>
 
         {error && (
@@ -93,11 +99,10 @@ export default function LoginPage() {
           invalidText={errors.password?.message}
         />
 
-        <Button type="submit">Login</Button>
-
-        <p className={styles.link}>
+        <div className={styles.actions}>
           <a href="/forgot-password">Forgot your password?</a>
-        </p>
+          <Button type="submit">Login</Button>
+        </div>
       </form>
     </div>
   );

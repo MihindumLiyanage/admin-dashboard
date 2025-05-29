@@ -176,6 +176,11 @@ function FinancialForm({
       noValidate
       aria-label="Financial information form"
     >
+      <div className={styles.formFooter}>
+        <Button type="submit" kind="primary">
+          Save & Continue
+        </Button>
+      </div>
       <Grid condensed className={styles.grid}>
         <Column sm={4} md={8} lg={6} className={styles.formColumn}>
           {renderNumberInput(

@@ -13,7 +13,6 @@ interface BrokerFormProps {
   application: any;
   onUpdate: (application: any) => void;
   onNext: () => void;
-  onBack: () => void;
   isFirstStep: boolean;
   isLastStep: boolean;
 }

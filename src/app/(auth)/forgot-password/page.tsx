@@ -51,6 +51,12 @@ export default function ForgotPasswordPage() {
   return (
     <div className={styles.container}>
       <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+        <img
+          src="/images/logo.png"
+          alt="Login Illustration"
+          className={styles.heroImage}
+          loading="lazy"
+        />
         <h1>Reset Password</h1>
 
         {success && (
@@ -80,10 +86,9 @@ export default function ForgotPasswordPage() {
           invalidText={errors.email?.message}
         />
 
-        <Button type="submit">Send Reset Link</Button>
-
-        <p className={styles.link}>
+        <p className={styles.actions}>
           <a href="/login">Login</a>
+          <Button type="submit">Send Reset Link</Button>
         </p>
       </form>
     </div>

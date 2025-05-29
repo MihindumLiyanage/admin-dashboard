@@ -5,10 +5,8 @@ import {
   Header as CarbonHeader,
   HeaderGlobalBar,
   HeaderGlobalAction,
-  OverflowMenu,
-  OverflowMenuItem,
 } from "@carbon/react";
-import { Moon, Sun, UserAvatar } from "@carbon/icons-react";
+import { Moon, Sun } from "@carbon/icons-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import styles from "@/styles/layouts/header.module.scss";
@@ -16,6 +14,8 @@ import styles from "@/styles/layouts/header.module.scss";
 export const Header = () => {
   const { toggleTheme, theme } = useTheme();
   const { user, logout } = useAuth();
+
+  const firstLetter = user?.name ? user.name.charAt(0).toUpperCase() : "";
 
   return (
     <CarbonHeader aria-label="Admin Dashboard Header" className={styles.header}>
@@ -28,17 +28,18 @@ export const Header = () => {
           {theme === "g100" ? <Sun size={20} /> : <Moon size={20} />}
         </HeaderGlobalAction>
 
-        <OverflowMenu
-          ariaLabel="User menu"
-          flipped
-          renderIcon={UserAvatar}
-          iconDescription="Open user menu"
+        <HeaderGlobalAction
+          aria-label={`Logout ${user?.name ?? ""}`}
+          onClick={logout}
+          tooltipAlignment="end"
+          className={styles.userAvatarAction}
         >
-          <OverflowMenuItem disabled>
-            <span className={styles.username}>{user?.name}</span>
-          </OverflowMenuItem>
-          <OverflowMenuItem onClick={logout} itemText="Logout" />
-        </OverflowMenu>
+          {firstLetter ? (
+            <div className={styles.userAvatarLetter}>{firstLetter}</div>
+          ) : (
+            <span>?</span>
+          )}
+        </HeaderGlobalAction>
       </HeaderGlobalBar>
     </CarbonHeader>
   );
