@@ -45,7 +45,7 @@ export default function LoginPage() {
       setSuccess("You have been successfully logged in.");
 
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push("/home");
       }, 1500);
     } catch (err: any) {
       console.error("Login error:", err);

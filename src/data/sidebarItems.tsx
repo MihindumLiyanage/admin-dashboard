@@ -16,7 +16,7 @@ export const sidebarItems: NavItem[] = [
     id: "dashboard",
     label: "Dashboard",
     icon: Dashboard,
-    href: "/dashboard",
+    href: "/home",
   },
   {
     id: "submissions",
