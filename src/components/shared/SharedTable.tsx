@@ -58,15 +58,19 @@ const SharedTable: React.FC<TableProps> = ({
     return sortedRows.slice(start, start + pageSize);
   }, [sortedRows, page, pageSize]);
 
-  const carbonRows = paginatedRows.map((row) => ({
-    id: row.id,
-    ...row,
-  }));
+  const carbonRows = useMemo(() => {
+    return paginatedRows.map((row) => ({
+      id: row.id,
+      ...row,
+    }));
+  }, [paginatedRows]);
 
-  const carbonHeaders = columns.map((col) => ({
-    key: col.id,
-    header: col.header,
-  }));
+  const carbonHeaders = useMemo(() => {
+    return columns.map((col) => ({
+      key: col.id,
+      header: col.header,
+    }));
+  }, [columns]);
 
   return (
     <DataTable rows={carbonRows} headers={carbonHeaders} isSortable>

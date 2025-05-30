@@ -6,12 +6,13 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { Button, TextInput, ComboBox, Grid, Column } from "@carbon/react";
 import { ArrowLeft, ArrowRight } from "@carbon/icons-react";
-import { stateList } from "@/data/stateList";
+import { stateList } from "@/constants/stateList";
 import styles from "@/styles/pages/submissions.module.scss";
+import { Application } from "@/types/application";
 
 interface InsuredFormProps {
-  application: any;
-  onUpdate: (application: any) => void;
+  application: Application;
+  onUpdate: (application: Application) => void;
   onNext: () => void;
   onBack: () => void;
 }
@@ -81,8 +82,12 @@ function InsuredForm({
       onUpdate({
         ...application,
         insured: {
-          ...values,
-          naics: [values.naics],
+          name: values.name || "",
+          address: values.address || "",
+          city: values.city || "",
+          state: values.state || "",
+          zipcode: values.zipcode || "",
+          naics: [values.naics || ""],
         },
       });
     });

@@ -1,17 +1,21 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button, NumberInput, Grid, Column } from "@carbon/react";
 import { ArrowLeft } from "@carbon/icons-react";
 import { useForm, Controller } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import Toast from "@/components/common/Toast";
 import styles from "@/styles/pages/submissions.module.scss";
-import { coverageOptions } from "@/data/coverageOptions";
+import { coverageOptions } from "@/constants/coverageOptions";
+import { Application, CoverageType } from "@/types/application";
+import { generateUpdatedApplication } from "@/utils/helpers";
+import { createSubmission } from "@/services/submissionService";
 
 interface FinancialFormProps {
-  application: any;
-  onUpdate: (application: any) => void;
+  application: Application;
+  onUpdate: (application: Application) => void;
   onNext: () => void;
   onBack: () => void;
 }
@@ -50,7 +54,7 @@ const schema = yup.object().shape({
     .array()
     .of(yup.string().required())
     .min(1, "Select at least one coverage"),
-  retained_earnings: yup
+  retained_earning: yup
     .number()
     .typeError("Retained earning must be a number")
     .nullable()
@@ -70,6 +74,11 @@ function FinancialForm({
   onNext,
   onBack,
 }: FinancialFormProps) {
+  const [toast, setToast] = useState<{
+    kind: "error" | "info" | "success" | "warning";
+    title: string;
+  } | null>(null);
+
   const {
     control,
     handleSubmit,
@@ -81,18 +90,17 @@ function FinancialForm({
     mode: "onSubmit",
     resolver: yupResolver(schema),
     defaultValues: {
-      employee_count: application.financials.employee_count ?? undefined,
-      revenue: application.financials.revenue ?? undefined,
-      current_assets: application.financials.current_assets ?? undefined,
-      current_liabilities:
-        application.financials.current_liabilities ?? undefined,
-      total_assets: application.financials.total_assets ?? undefined,
-      total_liabilities: application.financials.total_liabilities ?? undefined,
-      net_income_loss: application.financials.net_income_loss ?? undefined,
+      employee_count: application.financials.employee_count,
+      revenue: application.financials.revenue,
+      current_assets: application.financials.current_assets,
+      current_liabilities: application.financials.current_liabilities,
+      total_assets: application.financials.total_assets,
+      total_liabilities: application.financials.total_liabilities,
+      net_income_loss: application.financials.net_income_loss,
       coverage:
         application.coverage?.map((c: { type: string }) => c.type) || [],
-      retained_earnings: application.financials.retained_earnings ?? undefined,
-      end_ebit: application.financials.end_ebit ?? undefined,
+      retained_earning: application.financials.retained_earning ?? null,
+      end_ebit: application.financials.end_ebit ?? null,
     },
   });
 
@@ -105,33 +113,65 @@ function FinancialForm({
     }
 
     const subscription = watch((values) => {
-      onUpdate({
+      const updatedFinancials = {
+        ...application.financials,
+        employee_count: values.employee_count,
+        revenue: values.revenue,
+        current_assets: values.current_assets,
+        current_liabilities: values.current_liabilities,
+        total_assets: values.total_assets,
+        total_liabilities: values.total_liabilities,
+        net_income_loss: values.net_income_loss,
+        retained_earning: values.retained_earning,
+        end_ebit: values.end_ebit,
+      };
+
+      const updatedCoverage = coverageOptions
+        .filter((option) => values.coverage?.includes(option.value))
+        .map((item) => ({
+          type: item.value as CoverageType,
+          limit: 50000,
+          retention: 0,
+          claims: { count: 0, payout: 0, remarks: "string" },
+        }));
+
+      const updatedApplication = generateUpdatedApplication({
         ...application,
-        financials: {
-          employee_count: values.employee_count,
-          revenue: values.revenue,
-          current_assets: values.current_assets,
-          current_liabilities: values.current_liabilities,
-          total_assets: values.total_assets,
-          total_liabilities: values.total_liabilities,
-          net_income_loss: values.net_income_loss,
-          retained_earnings: values.retained_earnings,
-          end_ebit: values.end_ebit,
-        },
-        coverage: coverageOptions
-          .filter((option) => values.coverage.includes(option.value))
-          .map((item) => ({
-            type: item.value,
-            label: item.label,
-          })),
+        financials: updatedFinancials,
+        coverage: updatedCoverage,
       });
+
+      onUpdate(updatedApplication);
     });
 
     return () => subscription.unsubscribe();
   }, [watch, onUpdate, application]);
 
-  const onSubmit = () => {
-    onNext();
+  const onSubmit = async (_data: any, event: any) => {
+    const action = event?.nativeEvent.submitter?.name;
+    const updatedApplication = generateUpdatedApplication(application);
+
+    try {
+      await createSubmission(updatedApplication);
+      setToast({
+        kind: "success",
+        title: "Risk data submitted",
+      });
+
+      if (action === "submit") {
+        onNext();
+      }
+    } catch (error) {
+      console.error("Failed to submit risk data:", error);
+      setToast({
+        kind: "error",
+        title: "Submission failed",
+      });
+    }
+  };
+
+  const onError = (err: any) => {
+    console.warn("Validation errors:", err);
   };
 
   const renderNumberInput = (
@@ -149,9 +189,13 @@ function FinancialForm({
           label={label}
           placeholder={placeholder}
           min={0}
-          {...field}
           invalid={!!errors[name]}
           invalidText={errors[name]?.message as string}
+          value={Array.isArray(field.value) ? "" : (field.value ?? "")}
+          onChange={(_e, { value }) => {
+            const val = value === "" ? null : Number(value);
+            field.onChange(val);
+          }}
         />
       )}
     />
@@ -172,13 +216,13 @@ function FinancialForm({
   return (
     <form
       className={styles.form}
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(onSubmit, onError)}
       noValidate
       aria-label="Financial information form"
     >
-      <div className={styles.formFooter}>
-        <Button type="submit" kind="primary">
-          Save & Continue
+      <div className={styles.topSaveButton}>
+        <Button kind="tertiary" name="save" type="submit" size="sm">
+          Save
         </Button>
       </div>
       <Grid condensed className={styles.grid}>
@@ -263,7 +307,7 @@ function FinancialForm({
         </Column>
         <Column sm={4} md={8} lg={6} className={styles.formColumn}>
           {renderNumberInput(
-            "retained_earnings",
+            "retained_earning",
             "Most Recent Year End Retained Earnings"
           )}
         </Column>
@@ -275,10 +319,17 @@ function FinancialForm({
         <Button kind="secondary" renderIcon={ArrowLeft} onClick={onBack}>
           Back
         </Button>
-        <Button kind="primary" type="submit">
+        <Button kind="primary" name="submit" type="submit">
           Submit
         </Button>
       </div>
+      {toast && (
+        <Toast
+          kind={toast.kind}
+          title={toast.title}
+          onClose={() => setToast(null)}
+        />
+      )}
     </form>
   );
 }

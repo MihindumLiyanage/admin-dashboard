@@ -1,13 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button, Tile, Modal, TextInput, Grid, Column } from "@carbon/react";
-import { ApplicationStatus } from "@/types/status";
+import { ApplicationStatus } from "@/constants/status";
 import styles from "@/styles/pages/submissions.module.scss";
+import { Application } from "@/types/application";
+import { coverageOptions } from "@/constants/coverageOptions";
+import { submitSubmissionReview } from "@/services/submissionService";
 
 interface DecisionProps {
-  application: any;
-  onUpdate: (application: any) => void;
+  application: Application;
+  onUpdate: (application: Application) => void;
 }
 
 interface RiskResponse {
@@ -18,32 +21,34 @@ interface RiskResponse {
 function Decision({ application, onUpdate }: DecisionProps) {
   const [open, setOpen] = useState(false);
   const [declineReason, setDeclineReason] = useState("");
+
   const [riskResponse, setRiskResponse] = useState<RiskResponse>({
-    assessment: null,
-    explanation: "",
+    assessment: application?.submission_reference?.assessment || null,
+    explanation: application?.submission_reference?.explanation || "",
   });
 
-  useEffect(() => {
-    if (application.decision) {
-      setRiskResponse({
-        assessment: application.decision.assessment || null,
-        explanation: application.decision.explanation || "",
-      });
-    }
-  }, [application.decision]);
-
-  const handleAccept = () => {
-    setRiskResponse((prevRiskResponse) => {
-      const updatedDecision = {
-        ...prevRiskResponse,
+  const handleAccept = async () => {
+    try {
+      await submitSubmissionReview(application.submission_reference.id, {
         assessment: ApplicationStatus.ACCEPTED,
-      };
+        explanation: "",
+      });
+
+      setRiskResponse({
+        assessment: ApplicationStatus.ACCEPTED,
+        explanation: "",
+      });
+
       onUpdate({
         ...application,
-        decision: updatedDecision,
+        submission_reference: {
+          ...application.submission_reference,
+          assessment: ApplicationStatus.ACCEPTED,
+        },
       });
-      return updatedDecision;
-    });
+    } catch (error) {
+      console.error("Error submitting user review:", error);
+    }
   };
 
   const handleReject = () => {
@@ -56,29 +61,41 @@ function Decision({ application, onUpdate }: DecisionProps) {
     setDeclineReason(event.target.value);
   };
 
-  const handleCompleteRejection = () => {
-    setRiskResponse((prevRiskResponse) => {
-      const updatedDecision = {
-        ...prevRiskResponse,
+  const handleCompleteRejection = async () => {
+    try {
+      await submitSubmissionReview(application.submission_reference.id, {
         assessment: ApplicationStatus.REJECTED,
         explanation: declineReason,
-      };
+      });
+
+      setRiskResponse({
+        assessment: ApplicationStatus.REJECTED,
+        explanation: declineReason,
+      });
+
       onUpdate({
         ...application,
-        decision: updatedDecision,
+        submission_reference: {
+          ...application.submission_reference,
+          assessment: ApplicationStatus.REJECTED,
+          explanation: declineReason,
+        },
       });
       setOpen(false);
-      return updatedDecision;
-    });
+    } catch (error) {
+      console.error("Error submitting user review:", error);
+    }
   };
 
   const getCoverageLabels = (coverageValues: string[]) => {
-    const coverageMap: { [key: string]: string } = {
-      "D&O": "D&O",
-      EPL: "EPL",
-      FID: "FID",
-    };
-    return coverageValues.map((value) => coverageMap[value]).join(" / ");
+    return coverageValues
+      .map(
+        (value) =>
+          coverageOptions.find((opt: { value: string }) => opt.value === value)
+            ?.label
+      )
+      .filter(Boolean)
+      .join(" / ");
   };
 
   const coverageArray = application.coverage as Array<{ type: string }>;
@@ -93,6 +110,7 @@ function Decision({ application, onUpdate }: DecisionProps) {
           Reject
         </Button>
       </div>
+
       <div className={styles.container}>
         <Modal
           open={open}
@@ -114,6 +132,7 @@ function Decision({ application, onUpdate }: DecisionProps) {
             required
           />
         </Modal>
+
         <Tile className={styles.tile}>
           <Grid className={styles.grid}>
             <Column sm={4} md={4} lg={3}>
@@ -134,7 +153,6 @@ function Decision({ application, onUpdate }: DecisionProps) {
                 <strong>Zipcode:</strong> {application.insured?.zipcode}
               </p>
             </Column>
-
             <Column sm={4} md={4} lg={4}>
               <h3 className={styles.sectionTitle}>Financial</h3>
               <p>
@@ -145,7 +163,6 @@ function Decision({ application, onUpdate }: DecisionProps) {
                 {application.financials?.employee_count}
               </p>
             </Column>
-
             <Column sm={4} md={4} lg={3}>
               <h3 className={styles.sectionTitle}>Decision</h3>
               <p>
@@ -157,13 +174,13 @@ function Decision({ application, onUpdate }: DecisionProps) {
                 </p>
               )}
             </Column>
-
             <Column sm={4} md={4} lg={2}>
               <h3 className={styles.sectionTitle}>Premium</h3>
-              <p className={styles.premiumAmount}>$500</p>
+              <p className={styles.premiumAmount}>\\$500</p>
             </Column>
           </Grid>
         </Tile>
+
         <h2 className={styles.sectionHeading}>Underwriting Information</h2>
         <Tile className={styles.tile}>
           <Grid className={styles.grid}>
@@ -189,7 +206,6 @@ function Decision({ application, onUpdate }: DecisionProps) {
                 <strong>ZipCode:</strong> {application.broker?.zipcode}
               </p>
             </Column>
-
             <Column sm={4} md={4} lg={4}>
               <h3 className={styles.sectionTitle}>Insured Details</h3>
               <p>
@@ -211,7 +227,6 @@ function Decision({ application, onUpdate }: DecisionProps) {
                 <strong>NAICS:</strong> {application.insured?.naics}
               </p>
             </Column>
-
             <Column sm={4} md={4} lg={4}>
               <h3 className={styles.sectionTitle}>Financial Details</h3>
               <p>
@@ -248,14 +263,13 @@ function Decision({ application, onUpdate }: DecisionProps) {
               </p>
               <p>
                 <strong> Retained Earnings:</strong>{" "}
-                {application.financials?.retained_earnings || "None"}
+                {application.financials?.retained_earning || "None"}
               </p>
               <p>
                 <strong> EBIT:</strong>{" "}
                 {application.financials?.end_ebit || "None"}
               </p>
             </Column>
-
             <Column sm={4} md={4} lg={3} className={styles.printColumn}>
               <Button disabled kind="tertiary" size="md">
                 Print PDF

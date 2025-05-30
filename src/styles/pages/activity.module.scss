@@ -26,6 +26,11 @@
   width: 200px;
 }
 
+.disabledEdit {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .error {
   color: #da1e28;
   font-weight: 600;

@@ -6,12 +6,13 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { TextInput, ComboBox, Grid, Column, Button } from "@carbon/react";
 import { ArrowRight } from "@carbon/icons-react";
-import { stateList } from "@/data/stateList";
+import { stateList } from "@/constants/stateList";
 import styles from "@/styles/pages/submissions.module.scss";
+import { Application, Broker } from "@/types/application";
 
 interface BrokerFormProps {
-  application: any;
-  onUpdate: (application: any) => void;
+  application: Application;
+  onUpdate: (application: Application) => void;
   onNext: () => void;
   isFirstStep: boolean;
   isLastStep: boolean;
@@ -48,7 +49,7 @@ function BrokerForm({ application, onUpdate, onNext }: BrokerFormProps) {
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm({
+  } = useForm<Broker>({
     mode: "onChange",
     resolver: yupResolver(schema),
     defaultValues: {
@@ -74,11 +75,18 @@ function BrokerForm({ application, onUpdate, onNext }: BrokerFormProps) {
 
   useEffect(() => {
     const subscription = watch((values) => {
+      const updatedBroker: Broker = {
+        name: values.name || "",
+        organization: values.organization || "",
+        address: values.address || "",
+        city: values.city || "",
+        state: values.state || "",
+        zipcode: values.zipcode || "",
+      };
+
       onUpdate({
         ...application,
-        broker: {
-          ...values,
-        },
+        broker: updatedBroker,
       });
     });
     return () => subscription.unsubscribe();
