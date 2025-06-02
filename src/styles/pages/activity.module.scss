@@ -6,11 +6,19 @@
   gap: 1rem;
 }
 
+.toolbarRow {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
 .tileGrid2 {
   display: flex;
   gap: 1.5rem;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-end;
 }
 
 .filterLabel {
@@ -35,4 +43,8 @@
   color: #da1e28;
   font-weight: 600;
   padding: 1rem 0;
+}
+
+.fetchButton {
+  align-self: flex-end;
 }

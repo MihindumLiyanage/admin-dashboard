@@ -35,13 +35,13 @@ export interface Insured {
 }
 
 export interface Finance {
-  employee_count: number;
-  revenue: number;
-  current_assets: number;
-  current_liabilities: number;
-  total_assets: number;
-  total_liabilities: number;
-  net_income_loss: number;
+  employee_count?: number;
+  revenue?: number;
+  current_assets?: number;
+  current_liabilities?: number;
+  total_assets?: number;
+  total_liabilities?: number;
+  net_income_loss?: number;
   retained_earning?: number | null;
   end_ebit?: number | null;
 }
@@ -64,3 +64,39 @@ export enum CoverageType {
   EPL = "EPL",
   FID = "FID",
 }
+
+export const DEFAULT_APPLICATION: Application = {
+  submission_reference: {
+    id: "",
+    version: "",
+  },
+  broker: {
+    name: "",
+    organization: "",
+    address: "",
+    city: "",
+    state: "",
+    zipcode: "",
+  },
+  carrier: "Llyod",
+  insured: {
+    name: "",
+    address: "",
+    city: "",
+    state: "",
+    zipcode: "",
+    naics: [""],
+  },
+  financials: {
+    employee_count: undefined,
+    revenue: undefined,
+    current_assets: undefined,
+    current_liabilities: undefined,
+    total_assets: undefined,
+    total_liabilities: undefined,
+    net_income_loss: undefined,
+    retained_earning: null,
+    end_ebit: null,
+  },
+  coverage: [],
+};

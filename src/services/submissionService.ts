@@ -1,35 +1,63 @@
 import { get, post } from "./httpService";
-import { Application } from "@/types/application";
+import {
+  Application,
+  Broker,
+  Insured,
+  Finance,
+  Claims,
+  CoverageType,
+} from "@/types/application";
 
-export const fetchSubmissionById = async <T = any>(
+export interface SubmissionItem {
+  submission_reference: {
+    id: string;
+    version: string;
+  };
+  broker: Broker;
+  insured: Insured;
+  financials: Finance;
+  coverage: {
+    type: CoverageType;
+    limit?: number;
+    retention?: number;
+    claims?: Claims;
+  }[];
+  assessment?: string;
+  explanation?: string;
+  carrier?: string;
+  issue_date?: string;
+}
+
+export const fetchSubmissionById = async (
   submission_id: string,
+  carrier: string = "Llyod",
   version: string = "latest"
-): Promise<T> => {
-  const url = `/submissions/${submission_id}/${version}`;
-  return get<T>(url);
+): Promise<SubmissionItem> => {
+  const url = `/submissions/${submission_id}/${version}?carrier=${carrier}`;
+  return get<SubmissionItem>(url);
 };
 
-export const fetchSubmissionsByFilter = async <T = any>(
+export const fetchSubmissionsByFilter = async (
   collection_name: string,
   carrier: string = "Llyod",
   version: string = "latest"
-): Promise<T> => {
+): Promise<SubmissionItem[]> => {
   const url = `/submissions/${version}?collection_name=${collection_name}&carrier=${carrier}`;
-  return get<T>(url);
+  return get<SubmissionItem[]>(url);
 };
 
-export const createSubmission = async <T = any>(
+export const createSubmission = async (
   application: Application,
   mode: string = "assessment"
-): Promise<T> => {
+): Promise<SubmissionItem> => {
   const url = `/submissions/${mode === "assessment" ? "assessment" : ""}`;
-  return post<T>(url, application);
+  return post<SubmissionItem>(url, { application, mode });
 };
 
 export const submitSubmissionReview = async <T>(
   submission_id: string,
   quote_update: any
-) => {
+): Promise<T> => {
   const url = `/submissions/${submission_id}/assessment`;
   return post<T>(url, quote_update);
 };

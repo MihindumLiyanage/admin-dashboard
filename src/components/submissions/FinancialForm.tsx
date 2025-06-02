@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, NumberInput, Grid, Column } from "@carbon/react";
 import { ArrowLeft } from "@carbon/icons-react";
 import { useForm, Controller } from "react-hook-form";
@@ -12,12 +12,14 @@ import { coverageOptions } from "@/constants/coverageOptions";
 import { Application, CoverageType } from "@/types/application";
 import { generateUpdatedApplication } from "@/utils/helpers";
 import { createSubmission } from "@/services/submissionService";
+import { ApplicationStatus } from "@/constants/status";
 
 interface FinancialFormProps {
   application: Application;
   onUpdate: (application: Application) => void;
   onNext: () => void;
   onBack: () => void;
+  isLastStep: boolean;
 }
 
 const schema = yup.object().shape({
@@ -73,109 +75,134 @@ function FinancialForm({
   onUpdate,
   onNext,
   onBack,
+  isLastStep,
 }: FinancialFormProps) {
   const [toast, setToast] = useState<{
     kind: "error" | "info" | "success" | "warning";
     title: string;
   } | null>(null);
 
+  const defaultFormValues = {
+    employee_count: application.financials.employee_count ?? 0,
+    revenue: application.financials.revenue ?? 0,
+    current_assets: application.financials.current_assets ?? 0,
+    current_liabilities: application.financials.current_liabilities ?? 0,
+    total_assets: application.financials.total_assets ?? 0,
+    total_liabilities: application.financials.total_liabilities ?? 0,
+    net_income_loss: application.financials.net_income_loss ?? 0,
+    coverage: application.coverage?.map((c: { type: string }) => c.type) || [],
+    retained_earning: application.financials.retained_earning ?? null,
+    end_ebit: application.financials.end_ebit ?? null,
+  };
+
   const {
     control,
     handleSubmit,
-    watch,
     setValue,
     getValues,
-    formState: { errors },
+    formState: { errors, touchedFields, isSubmitted, isDirty },
   } = useForm({
-    mode: "onSubmit",
+    mode: "onChange",
     resolver: yupResolver(schema),
-    defaultValues: {
-      employee_count: application.financials.employee_count,
-      revenue: application.financials.revenue,
-      current_assets: application.financials.current_assets,
-      current_liabilities: application.financials.current_liabilities,
-      total_assets: application.financials.total_assets,
-      total_liabilities: application.financials.total_liabilities,
-      net_income_loss: application.financials.net_income_loss,
-      coverage:
-        application.coverage?.map((c: { type: string }) => c.type) || [],
-      retained_earning: application.financials.retained_earning ?? null,
-      end_ebit: application.financials.end_ebit ?? null,
-    },
+    defaultValues: defaultFormValues,
   });
 
-  const isInitialRender = useRef(true);
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   useEffect(() => {
-    if (isInitialRender.current) {
-      isInitialRender.current = false;
-      return;
+    if (!getValues("coverage")?.length) {
+      setValue("coverage", [coverageOptions[0].value]);
     }
+  }, [setValue, getValues]);
 
-    const subscription = watch((values) => {
-      const updatedFinancials = {
-        ...application.financials,
-        employee_count: values.employee_count,
-        revenue: values.revenue,
-        current_assets: values.current_assets,
-        current_liabilities: values.current_liabilities,
-        total_assets: values.total_assets,
-        total_liabilities: values.total_liabilities,
-        net_income_loss: values.net_income_loss,
-        retained_earning: values.retained_earning,
-        end_ebit: values.end_ebit,
-      };
+  const onSubmit = async (_data: any, event: any) => {
+    const action = event?.nativeEvent?.submitter?.name;
+    const values = getValues();
 
-      const updatedCoverage = coverageOptions
-        .filter((option) => values.coverage?.includes(option.value))
-        .map((item) => ({
-          type: item.value as CoverageType,
-          limit: 50000,
-          retention: 0,
-          claims: { count: 0, payout: 0, remarks: "string" },
-        }));
+    const updatedFinancials = {
+      ...application.financials,
+      employee_count: values.employee_count ?? undefined,
+      revenue: values.revenue ?? undefined,
+      current_assets: values.current_assets ?? undefined,
+      current_liabilities: values.current_liabilities ?? undefined,
+      total_assets: values.total_assets ?? undefined,
+      total_liabilities: values.total_liabilities ?? undefined,
+      net_income_loss: values.net_income_loss ?? undefined,
+      retained_earning: values.retained_earning ?? null,
+      end_ebit: values.end_ebit ?? null,
+    };
 
-      const updatedApplication = generateUpdatedApplication({
+    const updatedCoverage = coverageOptions
+      .filter((option) => values.coverage?.includes(option.value))
+      .map((item) => ({
+        type: item.value as CoverageType,
+        limit: 50000,
+        retention: 0,
+        claims: { count: 0, payout: 0, remarks: "string" },
+      }));
+
+    const applicationToProcess = generateUpdatedApplication(
+      {
         ...application,
         financials: updatedFinancials,
         coverage: updatedCoverage,
-      });
-
-      onUpdate(updatedApplication);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [watch, onUpdate, application]);
-
-  const onSubmit = async (_data: any, event: any) => {
-    const action = event?.nativeEvent.submitter?.name;
-    const updatedApplication = generateUpdatedApplication(application);
+      },
+      true
+    );
 
     try {
-      await createSubmission(updatedApplication);
-      setToast({
-        kind: "success",
-        title: "Risk data submitted",
-      });
-
       if (action === "submit") {
+        const response = await createSubmission(applicationToProcess);
+        sessionStorage.setItem(
+          "submissionData",
+          JSON.stringify({
+            ...response,
+            financials: updatedFinancials,
+            coverage: updatedCoverage,
+            assessment: response.assessment || ApplicationStatus.CREATED,
+            explanation: response.explanation || "",
+          })
+        );
+        onUpdate({
+          ...applicationToProcess,
+          submission_reference: {
+            ...applicationToProcess.submission_reference,
+            assessment: response.assessment || ApplicationStatus.CREATED,
+            explanation: response.explanation || "",
+          },
+        });
+        setToast({
+          kind: "success",
+          title: "Risk data submitted",
+        });
         onNext();
+      } else {
+        onUpdate(applicationToProcess);
+        setToast({
+          kind: "success",
+          title: "Changes saved",
+        });
       }
-    } catch (error) {
-      console.error("Failed to submit risk data:", error);
+    } catch (error: any) {
+      console.error("Failed to submit risk data:", {
+        message: error.message,
+        status: error.status,
+        response: error.response,
+      });
       setToast({
         kind: "error",
-        title: "Submission failed",
+        title: error.message || "Submission failed",
       });
     }
   };
 
-  const onError = (err: any) => {
-    console.warn("Validation errors:", err);
-  };
-
   const renderNumberInput = (
-    name: SchemaFields,
+    name: Exclude<SchemaFields, "coverage">,
     label: string,
     placeholder = ""
   ) => (
@@ -188,10 +215,9 @@ function FinancialForm({
           id={`${name}-input`}
           label={label}
           placeholder={placeholder}
-          min={0}
-          invalid={!!errors[name]}
+          invalid={isSubmitted || touchedFields[name] ? !!errors[name] : false}
           invalidText={errors[name]?.message as string}
-          value={Array.isArray(field.value) ? "" : (field.value ?? "")}
+          value={field.value ?? ""}
           onChange={(_e, { value }) => {
             const val = value === "" ? null : Number(value);
             field.onChange(val);
@@ -216,15 +242,22 @@ function FinancialForm({
   return (
     <form
       className={styles.form}
-      onSubmit={handleSubmit(onSubmit, onError)}
+      onSubmit={handleSubmit(onSubmit)}
       noValidate
       aria-label="Financial information form"
     >
       <div className={styles.topSaveButton}>
-        <Button kind="tertiary" name="save" type="submit" size="sm">
+        <Button
+          kind="tertiary"
+          name="save"
+          type="submit"
+          size="sm"
+          disabled={!isDirty}
+        >
           Save
         </Button>
       </div>
+
       <Grid condensed className={styles.grid}>
         <Column sm={4} md={8} lg={6} className={styles.formColumn}>
           {renderNumberInput(
@@ -293,15 +326,19 @@ function FinancialForm({
                         value={option.value}
                         checked={selectedValues.includes(option.value)}
                         onChange={() => handleCoverageChange(option.value)}
+                        aria-checked={selectedValues.includes(option.value)}
+                        aria-labelledby={`coverage-label-${option.value}`}
                       />
-                      {option.label}
+                      <span id={`coverage-label-${option.value}`}>
+                        {option.label}
+                      </span>
                     </label>
                   ))}
                 </div>
               );
             }}
           />
-          {errors.coverage && (
+          {errors.coverage && (isSubmitted || touchedFields.coverage) && (
             <p className={styles.error}>{errors.coverage.message as string}</p>
           )}
         </Column>
@@ -315,14 +352,21 @@ function FinancialForm({
           {renderNumberInput("end_ebit", "Most Recent Year End EBIT")}
         </Column>
       </Grid>
+
       <div className={styles.formFooter}>
         <Button kind="secondary" renderIcon={ArrowLeft} onClick={onBack}>
           Back
         </Button>
-        <Button kind="primary" name="submit" type="submit">
+        <Button
+          kind="primary"
+          name="submit"
+          type="submit"
+          disabled={isLastStep}
+        >
           Submit
         </Button>
       </div>
+
       {toast && (
         <Toast
           kind={toast.kind}
