@@ -3,9 +3,11 @@
 @use "@carbon/styles/scss/colors" as *;
 @use "@carbon/styles/scss/utilities/convert" as *;
 
-$sidebar-width: spacing(12);
-$sidebar-collapsed-width: spacing(09);
+// Consistent variables
+$sidebar-width: 0rem;
+$sidebar-collapsed-width: 3rem;
 
+// Layout
 .layout {
   display: flex;
   height: 100vh;
@@ -29,4 +31,13 @@ $sidebar-collapsed-width: spacing(09);
   padding: spacing(07);
   overflow-y: auto;
   background-color: var(--cds-layer);
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: var(--cds-layer);
+  color: var(--cds-text-primary);
 }

@@ -15,7 +15,7 @@ import { useSidebar } from "@/contexts/SidebarContext";
 import { sidebarItems } from "@/data/sidebarItems";
 import styles from "@/styles/layouts/sidebar.module.scss";
 
-export const Sidebar = () => {
+export const Sidebar = React.memo(() => {
   const { isOpen, toggle } = useSidebar();
 
   return (
@@ -28,6 +28,7 @@ export const Sidebar = () => {
             alt="Logo"
             width={150}
             height={32}
+            priority
           />
         )}
 
@@ -49,31 +50,35 @@ export const Sidebar = () => {
         addMouseListeners={false}
       >
         <SideNavItems>
-          {sidebarItems.map((item) =>
-            item.subItems ? (
-              <SideNavMenu
-                key={item.id}
-                title={item.label}
-                renderIcon={item.icon}
-              >
-                {item.subItems.map((sub) => (
-                  <SideNavMenuItem key={sub.name}>
-                    <Link href={sub.path}>{sub.name}</Link>
-                  </SideNavMenuItem>
-                ))}
-              </SideNavMenu>
-            ) : (
-              <SideNavLink
-                key={item.id}
-                renderIcon={item.icon}
-                href={item.href}
-              >
-                {item.label}
-              </SideNavLink>
+          {sidebarItems?.length ? (
+            sidebarItems.map((item) =>
+              item.subItems ? (
+                <SideNavMenu
+                  key={item.id}
+                  title={item.label}
+                  renderIcon={item.icon}
+                >
+                  {item.subItems.map((sub) => (
+                    <SideNavMenuItem key={sub.name}>
+                      <Link href={sub.path}>{sub.name}</Link>
+                    </SideNavMenuItem>
+                  ))}
+                </SideNavMenu>
+              ) : (
+                <SideNavLink
+                  key={item.id}
+                  renderIcon={item.icon}
+                  href={item.href}
+                >
+                  {item.label}
+                </SideNavLink>
+              )
             )
+          ) : (
+            <SideNavLink href="/home">Home</SideNavLink>
           )}
         </SideNavItems>
       </SideNav>
     </aside>
   );
-};
+});

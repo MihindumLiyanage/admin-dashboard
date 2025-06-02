@@ -29,7 +29,7 @@ export const Header = () => {
         </HeaderGlobalAction>
 
         <HeaderGlobalAction
-          aria-label={`Logout ${user?.name ?? ""}`}
+          aria-label={user?.name ? `Logout ${user.name}` : "Logout"}
           onClick={logout}
           tooltipAlignment="end"
           className={styles.userAvatarAction}

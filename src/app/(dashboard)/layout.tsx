@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/layouts/Header";
@@ -23,7 +23,9 @@ export default function DashboardLayout({
     }
   }, [isAuthenticated, router]);
 
-  if (!isAuthenticated) return null;
+  if (!isAuthenticated) {
+    return <div className={styles.loading}>Loading...</div>;
+  }
 
   return (
     <div className={styles.layout}>

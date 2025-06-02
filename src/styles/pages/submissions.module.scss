@@ -5,6 +5,7 @@
 .container {
   min-height: 100vh;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -151,12 +152,6 @@
   display: flex;
   justify-content: space-between;
   margin-top: 2rem;
-}
-
-.sectionTitle {
-  font-size: 1.25rem;
-  margin-bottom: 1rem;
-  font-weight: 600;
 }
 
 .sectionHeading {

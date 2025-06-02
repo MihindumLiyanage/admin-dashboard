@@ -1,6 +1,6 @@
 import { Dashboard, Task, CarbonIconType, Time } from "@carbon/icons-react";
 
-export type NavItem = {
+export type SidebarItem = {
   id: string;
   label: string;
   icon: CarbonIconType;
@@ -11,7 +11,7 @@ export type NavItem = {
   }[];
 };
 
-export const sidebarItems: NavItem[] = [
+export const sidebarItems: SidebarItem[] = [
   {
     id: "dashboard",
     label: "Dashboard",
