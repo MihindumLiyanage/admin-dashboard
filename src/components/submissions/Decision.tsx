@@ -10,6 +10,7 @@ import {
   ModalBody,
   ModalFooter,
   TextArea,
+  InlineLoading,
 } from "@carbon/react";
 import { ApplicationStatus } from "@/constants/status";
 import { ArrowLeft } from "@carbon/icons-react";
@@ -36,9 +37,13 @@ function Decision({ application, onUpdate, onBack }: DecisionProps) {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [declineReason, setDeclineReason] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!application.submission_reference.id) return;
+
+      setLoading(true);
       try {
         const data = await fetchSubmissionById(
           application.submission_reference.id,
@@ -48,8 +53,7 @@ function Decision({ application, onUpdate, onBack }: DecisionProps) {
 
         const updated = {
           ...application,
-          assessment: data.assessment || undefined,
-          explanation: data.explanation || "",
+          issue_date: data.issue_date || "",
         };
         onUpdate(updated);
         sessionStorage.setItem("submissionData", JSON.stringify(updated));
@@ -59,6 +63,8 @@ function Decision({ application, onUpdate, onBack }: DecisionProps) {
           kind: "error",
           title: "Failed to load submission status",
         });
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -172,6 +178,14 @@ function Decision({ application, onUpdate, onBack }: DecisionProps) {
       .join(" / ");
   };
 
+  if (loading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <InlineLoading description="Loading submission data..." />
+      </div>
+    );
+  }
+
   return (
     <div className={styles.container}>
       {toast && (
@@ -267,11 +281,11 @@ function Decision({ application, onUpdate, onBack }: DecisionProps) {
               <p>
                 <strong>Status:</strong> {application.assessment}
               </p>
-              {(application.assessment === ApplicationStatus.REJECTED ||
-                application.assessment === ApplicationStatus.APPROVED) && (
+              {(application.assessment === ApplicationStatus.DECLINED ||
+                application.assessment === ApplicationStatus.ACCEPTED) && (
                 <p>
                   <strong>
-                    {application.assessment === ApplicationStatus.REJECTED
+                    {application.assessment === ApplicationStatus.DECLINED
                       ? "Decline"
                       : "Approval"}{" "}
                     Reason:
@@ -331,7 +345,7 @@ function Decision({ application, onUpdate, onBack }: DecisionProps) {
                 <strong>ZipCode:</strong> {application.insured.zipcode}
               </p>
               <p>
-                <strong>NAICS:</strong> {application.insured.naics}
+                <strong>NAICS:</strong> {application.insured.naics.join(", ")}
               </p>
             </Column>
             <Column sm={4} md={4} lg={4}>

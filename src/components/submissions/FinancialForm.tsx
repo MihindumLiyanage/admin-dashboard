@@ -12,7 +12,6 @@ import { Application, CoverageType } from "@/types/application";
 import { generateUpdatedApplication } from "@/utils/helpers";
 import { addSubmissions, createSubmission } from "@/services/submissionService";
 import { ApplicationStatus } from "@/constants/status";
-import { useRouter } from "next/navigation";
 
 interface FinancialFormProps {
   application: Application;
@@ -72,7 +71,6 @@ function FinancialForm({
     title: string;
   } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const router = useRouter();
 
   const defaultFormValues = {
     employee_count: application.financials.employee_count || null,
@@ -160,27 +158,32 @@ function FinancialForm({
         response = await createSubmission(updatedApplication);
       }
 
+      let dataApplication = {
+        ...updatedApplication,
+        assessment: response.assessment,
+        explanation: response.explanation,
+      };
+
       if (action === "submit") {
         setToast({ kind: "success", title: "Submission successful!" });
         sessionStorage.setItem(
           "submissionData",
-          JSON.stringify(updatedApplication)
+          JSON.stringify(dataApplication)
         );
-        onUpdate(updatedApplication);
+        onUpdate(dataApplication);
         onNext();
       } else if (action === "save") {
         setToast({
           kind: "success",
-          title: updatedApplication.submission_reference?.id
+          title: dataApplication.submission_reference?.id
             ? "Changes saved with new version"
             : "Submission created and saved!",
         });
         sessionStorage.setItem(
           "submissionData",
-          JSON.stringify(updatedApplication)
+          JSON.stringify(dataApplication)
         );
-        onUpdate(updatedApplication);
-        router.push("/activity?refresh=true");
+        onUpdate(dataApplication);
       }
     } catch (error: any) {
       console.error("Submission error:", error);

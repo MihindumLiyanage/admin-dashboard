@@ -61,7 +61,7 @@ export default function Submissions() {
         }
       } else {
         sessionStorage.removeItem("submissionData");
-        sessionStorage.removeItem("APPLICATION_DATA"); // Add this line to clear APPLICATION_DATA
+        sessionStorage.removeItem("APPLICATION_DATA");
         const storedData = sessionStorage.getItem("APPLICATION_DATA");
         if (storedData) {
           try {
