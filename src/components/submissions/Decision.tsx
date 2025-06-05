@@ -1,185 +1,233 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Button, Modal, TextInput, Grid, Column } from "@carbon/react";
+import React, { useEffect, useState } from "react";
+import {
+  Button,
+  Grid,
+  Column,
+  ComposedModal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  TextArea,
+} from "@carbon/react";
 import { ApplicationStatus } from "@/constants/status";
+import { ArrowLeft } from "@carbon/icons-react";
 import styles from "@/styles/pages/submissions.module.scss";
-import { Application } from "@/types/application";
+import { Application, Coverage } from "@/types/application";
 import { coverageOptions } from "@/constants/coverageOptions";
-import { submitSubmissionReview } from "@/services/submissionService";
+import {
+  fetchSubmissionById,
+  submitSubmissionReview,
+} from "@/services/submissionService";
+import Toast from "@/components/common/Toast";
 
 interface DecisionProps {
   application: Application;
   onUpdate: (application: Application) => void;
-  onNext: () => void;
   onBack: () => void;
-  isFirstStep: boolean;
-  isLastStep: boolean;
 }
 
-interface RiskResponse {
-  assessment: ApplicationStatus | null;
-  explanation: string;
-}
+function Decision({ application, onUpdate, onBack }: DecisionProps) {
+  const [toast, setToast] = useState<{
+    kind: "error" | "info" | "success" | "warning";
+    title: string;
+  } | null>(null);
 
-function Decision({
-  application,
-  onUpdate,
-  onNext,
-  onBack,
-  isLastStep,
-}: DecisionProps) {
-  const [open, setOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [declineReason, setDeclineReason] = useState("");
-  const [riskResponse, setRiskResponse] = useState<RiskResponse>({
-    assessment: application.submission_reference.assessment || null,
-    explanation: application.submission_reference.explanation || "",
-  });
 
   useEffect(() => {
-    setRiskResponse({
-      assessment: application.submission_reference.assessment || null,
-      explanation: application.submission_reference.explanation || "",
-    });
-  }, [application]);
+    const fetchData = async () => {
+      try {
+        const data = await fetchSubmissionById(
+          application.submission_reference.id,
+          application.carrier,
+          application.submission_reference.version
+        );
+
+        const updated = {
+          ...application,
+          assessment: data.assessment || undefined,
+          explanation: data.explanation || "",
+        };
+        onUpdate(updated);
+        sessionStorage.setItem("submissionData", JSON.stringify(updated));
+      } catch (error) {
+        console.error("Error fetching submission:", error);
+        setToast({
+          kind: "error",
+          title: "Failed to load submission status",
+        });
+      }
+    };
+
+    fetchData();
+  }, [
+    application.submission_reference.id,
+    application.carrier,
+    application.submission_reference.version,
+    onUpdate,
+  ]);
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   const handleAccept = async () => {
     try {
-      const response = await submitSubmissionReview(
-        application.submission_reference.id,
-        {
-          submission_reference: {
-            id: application.submission_reference.id,
-            version: application.submission_reference.version,
-          },
-          assessment: ApplicationStatus.ACCEPTED,
-          explanation: "",
-          issue_date: new Date().toISOString(),
-        }
-      );
-
-      setRiskResponse({
+      const reviewPayload = {
+        submission_reference: application.submission_reference,
         assessment: ApplicationStatus.ACCEPTED,
-        explanation: "",
-      });
+        explanation: "Application accepted based on review.",
+        issue_date: new Date().toISOString(),
+      };
 
-      onUpdate({
-        ...application,
-        submission_reference: {
-          ...application.submission_reference,
-          assessment: ApplicationStatus.ACCEPTED,
-          explanation: "",
-        },
-      });
-
-      sessionStorage.removeItem("submissionData");
-      if (isLastStep) {
-        onNext();
-      }
-    } catch (error: any) {
-      console.error("Error submitting user review:", error);
-    }
-  };
-
-  const handleReject = () => {
-    setOpen(true);
-  };
-
-  const handleDeclineReasonChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setDeclineReason(event.target.value);
-  };
-
-  const handleCompleteRejection = async () => {
-    try {
       const response = await submitSubmissionReview(
         application.submission_reference.id,
-        {
-          submission_reference: {
-            id: application.submission_reference.id,
-            version: application.submission_reference.version,
-          },
-          assessment: ApplicationStatus.REJECTED,
-          explanation: declineReason,
-          issue_date: new Date().toISOString(),
-        }
+        reviewPayload
       );
 
-      setRiskResponse({
-        assessment: ApplicationStatus.REJECTED,
-        explanation: declineReason,
-      });
-
-      onUpdate({
+      const updatedApplication = {
         ...application,
-        submission_reference: {
-          ...application.submission_reference,
-          assessment: ApplicationStatus.REJECTED,
-          explanation: declineReason,
-        },
-      });
+        assessment: response.assessment,
+        explanation: response.explanation,
+        issue_date: response.issue_date,
+      };
 
-      sessionStorage.removeItem("submissionData");
-      setOpen(false);
-      if (isLastStep) {
-        onNext();
-      }
-    } catch (error: any) {
-      console.error("Error submitting user review:", error);
+      onUpdate(updatedApplication);
+      sessionStorage.setItem(
+        "submissionData",
+        JSON.stringify(updatedApplication)
+      );
+
+      setToast({
+        kind: "success",
+        title: "Submission approved successfully",
+      });
+    } catch (error) {
+      console.error("Error approving submission:", error);
+      setToast({
+        kind: "error",
+        title: "Failed to approve submission",
+      });
     }
   };
 
-  const getCoverageLabels = (coverageValues: string[]) => {
-    return coverageValues
+  const handleConfirmReject = async () => {
+    try {
+      const reviewPayload = {
+        submission_reference: application.submission_reference,
+        assessment: ApplicationStatus.DECLINED,
+        explanation: declineReason.trim() || "No reason provided.",
+        issue_date: new Date().toISOString(),
+      };
+
+      const response = await submitSubmissionReview(
+        application.submission_reference.id,
+        reviewPayload
+      );
+
+      const updatedApplication = {
+        ...application,
+        assessment: response.assessment,
+        explanation: response.explanation,
+        issue_date: response.issue_date,
+      };
+
+      onUpdate(updatedApplication);
+      sessionStorage.setItem(
+        "submissionData",
+        JSON.stringify(updatedApplication)
+      );
+
+      setToast({
+        kind: "success",
+        title: "Submission declined successfully",
+      });
+
+      setIsModalOpen(false);
+      setDeclineReason("");
+    } catch (error) {
+      console.error("Error declining submission:", error);
+      setToast({
+        kind: "error",
+        title: "Failed to decline submission",
+      });
+    }
+  };
+
+  const getCoverageLabels = (coverages: Coverage[]) => {
+    return coverages
       .map(
-        (value) =>
-          coverageOptions.find((opt: { value: string }) => opt.value === value)
-            ?.label
+        (coverage) =>
+          coverageOptions.find(
+            (opt: { value: string }) => opt.value === coverage.type
+          )?.label
       )
       .filter(Boolean)
       .join(" / ");
   };
 
-  const coverageArray = application.coverage as Array<{ type: string }>;
-
   return (
     <div className={styles.container}>
-      <Modal
-        open={open}
-        onRequestClose={() => setOpen(false)}
-        modalHeading="Reason for Decline"
-        primaryButtonText="Complete"
-        secondaryButtonText="Cancel"
-        onRequestSubmit={handleCompleteRejection}
-        size="sm"
-        danger
-      >
-        <p>Please provide a reason for declining this application:</p>
-        <TextInput
-          id="user-decline-reason"
-          labelText="Decline Reason"
-          placeholder="Enter reason..."
-          value={declineReason}
-          onChange={handleDeclineReasonChange}
-          required
+      {toast && (
+        <Toast
+          kind={toast.kind}
+          title={toast.title}
+          onClose={() => setToast(null)}
         />
-      </Modal>
+      )}
+
+      <ComposedModal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        size="sm"
+      >
+        <ModalHeader title="Reject Submission" />
+        <ModalBody>
+          <p>Please provide a reason for declining this submission:</p>
+          <TextArea
+            labelText="Decline Reason"
+            placeholder="Enter reason..."
+            value={declineReason}
+            onChange={(e) => setDeclineReason(e.target.value)}
+            rows={4}
+          />
+        </ModalBody>
+        <ModalFooter>
+          <Button kind="secondary" onClick={() => setIsModalOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            kind="danger"
+            onClick={handleConfirmReject}
+            disabled={!declineReason.trim()}
+          >
+            Confirm Reject
+          </Button>
+        </ModalFooter>
+      </ComposedModal>
 
       <div className={styles.actionButtons}>
-        <Button kind="primary" onClick={handleAccept} size="lg">
+        <Button
+          kind="primary"
+          onClick={handleAccept}
+          size="lg"
+          disabled={application.assessment === ApplicationStatus.ACCEPTED}
+        >
           Accept
         </Button>
-        <Button kind="danger" onClick={handleReject} size="lg">
-          Reject
-        </Button>
         <Button
-          disabled={riskResponse?.assessment !== ApplicationStatus.REJECTED}
-          onClick={() => onBack()}
-          kind="tertiary"
+          kind="danger"
+          onClick={() => setIsModalOpen(true)}
           size="lg"
+          disabled={application.assessment === ApplicationStatus.REJECTED}
         >
-          Edit
+          Reject
         </Button>
       </div>
 
@@ -189,43 +237,46 @@ function Decision({
             <Column sm={4} md={4} lg={3}>
               <h4 className={styles.subSectionTitle}>Applicant</h4>
               <p>
-                <strong>Name:</strong> {application.insured?.name || "N/A"}
+                <strong>Name:</strong> {application.insured.name}
               </p>
               <p>
-                <strong>Address:</strong>{" "}
-                {application.insured?.address || "N/A"}
+                <strong>Address:</strong> {application.insured.address}
               </p>
               <p>
-                <strong>City:</strong> {application.insured?.city || "N/A"}
+                <strong>City:</strong> {application.insured.city}
               </p>
               <p>
-                <strong>State:</strong> {application.insured?.state || "N/A"}
+                <strong>State:</strong> {application.insured.state}
               </p>
               <p>
-                <strong>Zipcode:</strong>{" "}
-                {application.insured?.zipcode || "N/A"}
+                <strong>Zipcode:</strong> {application.insured.zipcode}
               </p>
             </Column>
             <Column sm={4} md={4} lg={4}>
               <h4 className={styles.subSectionTitle}>Financial</h4>
               <p>
-                <strong>Revenue:</strong>{" "}
-                {application.financials?.revenue || "N/A"}
+                <strong>Revenue:</strong> {application.financials.revenue}
               </p>
               <p>
                 <strong>Employee Count:</strong>{" "}
-                {application.financials?.employee_count || "N/A"}
+                {application.financials.employee_count}
               </p>
             </Column>
             <Column sm={4} md={4} lg={3}>
               <h4 className={styles.subSectionTitle}>Decision</h4>
               <p>
-                <strong>Status:</strong> {riskResponse?.assessment || "Pending"}
+                <strong>Status:</strong> {application.assessment}
               </p>
-              {riskResponse.assessment === ApplicationStatus.REJECTED && (
+              {(application.assessment === ApplicationStatus.REJECTED ||
+                application.assessment === ApplicationStatus.APPROVED) && (
                 <p>
-                  <strong>Decline Reason:</strong>{" "}
-                  {riskResponse?.explanation || "N/A"}
+                  <strong>
+                    {application.assessment === ApplicationStatus.REJECTED
+                      ? "Decline"
+                      : "Approval"}{" "}
+                    Reason:
+                  </strong>{" "}
+                  {application.explanation || "No reason provided"}
                 </p>
               )}
             </Column>
@@ -244,102 +295,102 @@ function Decision({
             <Column sm={4} md={4} lg={4}>
               <h4 className={styles.subSectionTitle}>Broker Details</h4>
               <p>
-                <strong>Broker Name:</strong>{" "}
-                {application.broker?.name || "N/A"}
+                <strong>Broker Name:</strong> {application.broker.name}
               </p>
               <p>
-                <strong>Organization:</strong>{" "}
-                {application.broker?.organization || "N/A"}
+                <strong>Organization:</strong> {application.broker.organization}
               </p>
               <p>
-                <strong>Address:</strong> {application.broker?.address || "N/A"}
+                <strong>Address:</strong> {application.broker.address}
               </p>
               <p>
-                <strong>City:</strong> {application.broker?.city || "N/A"}
+                <strong>City:</strong> {application.broker.city}
               </p>
               <p>
-                <strong>State:</strong> {application.broker?.state || "N/A"}
+                <strong>State:</strong> {application.broker.state}
               </p>
               <p>
-                <strong>ZipCode:</strong> {application.broker?.zipcode || "N/A"}
+                <strong>ZipCode:</strong> {application.broker.zipcode}
               </p>
             </Column>
             <Column sm={4} md={4} lg={4}>
               <h4 className={styles.subSectionTitle}>Insured Details</h4>
               <p>
-                <strong>Name:</strong> {application.insured?.name || "N/A"}
+                <strong>Name:</strong> {application.insured.name}
               </p>
               <p>
-                <strong>Address:</strong>{" "}
-                {application.insured?.address || "N/A"}
+                <strong>Address:</strong> {application.insured.address}
               </p>
               <p>
-                <strong>City:</strong> {application.insured?.city || "N/A"}
+                <strong>City:</strong> {application.insured.city}
               </p>
               <p>
-                <strong>State:</strong> {application.insured?.state || "N/A"}
+                <strong>State:</strong> {application.insured.state}
               </p>
               <p>
-                <strong>ZipCode:</strong>{" "}
-                {application.insured?.zipcode || "N/A"}
+                <strong>ZipCode:</strong> {application.insured.zipcode}
               </p>
               <p>
-                <strong>NAICS:</strong>{" "}
-                {application.insured?.naics?.join(", ") || "N/A"}
+                <strong>NAICS:</strong> {application.insured.naics}
               </p>
             </Column>
             <Column sm={4} md={4} lg={4}>
               <h4 className={styles.subSectionTitle}>Financial Details</h4>
               <p>
-                <strong>Total Employee Count:</strong>
-                {application.financials?.employee_count || "N/A"}
+                <strong>Total Employee Count:</strong>{" "}
+                {application.financials.employee_count}
               </p>
               <p>
-                <strong>Revenue:</strong>{" "}
-                {application.financials?.revenue || "N/A"}
+                <strong>Revenue:</strong> {application.financials.revenue}
               </p>
               <p>
                 <strong>Current Assets:</strong>{" "}
-                {application.financials?.current_assets || "N/A"}
+                {application.financials.current_assets}
               </p>
               <p>
                 <strong>Current Liabilities:</strong>{" "}
-                {application.financials?.current_liabilities || "N/A"}
+                {application.financials.current_liabilities}
               </p>
               <p>
                 <strong>Total Assets:</strong>{" "}
-                {application.financials?.total_assets || "N/A"}
+                {application.financials.total_assets}
               </p>
               <p>
                 <strong>Total Liabilities:</strong>{" "}
-                {application.financials?.total_liabilities || "N/A"}
+                {application.financials.total_liabilities}
               </p>
               <p>
                 <strong>Net Income/Loss:</strong>{" "}
-                {application.financials?.net_income_loss || "N/A"}
+                {application.financials.net_income_loss}
               </p>
               <p>
                 <strong>Coverage:</strong>{" "}
-                {coverageArray &&
-                  getCoverageLabels(coverageArray.map((c) => c.type) || [])}
+                {application.coverage &&
+                  getCoverageLabels(application.coverage)}
               </p>
               <p>
                 <strong>Retained Earnings:</strong>{" "}
-                {application.financials?.retained_earning || "None"}
+                {application.financials.retained_earning || "None"}
               </p>
               <p>
                 <strong>EBIT:</strong>{" "}
-                {application.financials?.end_ebit || "None"}
+                {application.financials.end_ebit || "None"}
               </p>
             </Column>
             <Column sm={4} md={4} lg={3} className={styles.printColumn}>
-              <Button disabled kind="tertiary" size="md">
+              <Button kind="tertiary" size="md">
                 Print PDF
               </Button>
             </Column>
           </Grid>
         </Column>
       </Grid>
+
+      <div className={styles.formFooter}>
+        <Button kind="secondary" renderIcon={ArrowLeft} onClick={onBack}>
+          Back
+        </Button>
+      </div>
     </div>
   );
 }

@@ -1,19 +1,6 @@
-import { ApplicationStatus } from "@/constants/status";
-
-export interface Application {
-  submission_reference: SubmissionReference;
-  broker: Broker;
-  carrier: string;
-  insured: Insured;
-  financials: Finance;
-  coverage: Coverage[];
-}
-
-export interface SubmissionReference {
+export interface Reference {
   id: string;
   version: string;
-  assessment?: ApplicationStatus;
-  explanation?: string;
 }
 
 export interface Broker {
@@ -35,15 +22,21 @@ export interface Insured {
 }
 
 export interface Finance {
-  employee_count?: number;
-  revenue?: number;
-  current_assets?: number;
-  current_liabilities?: number;
-  total_assets?: number;
-  total_liabilities?: number;
-  net_income_loss?: number;
+  employee_count: number;
+  revenue: number;
+  current_assets: number;
+  current_liabilities: number;
+  total_assets: number;
+  total_liabilities: number;
+  net_income_loss: number;
   retained_earning?: number | null;
   end_ebit?: number | null;
+}
+
+export interface Claims {
+  count: number;
+  payout: number;
+  remarks: string;
 }
 
 export interface Coverage {
@@ -53,10 +46,15 @@ export interface Coverage {
   claims: Claims;
 }
 
-export interface Claims {
-  count: number;
-  payout: number;
-  remarks: string;
+export interface Application {
+  submission_reference: Reference;
+  broker: Broker;
+  carrier: string;
+  insured: Insured;
+  financials: Finance;
+  coverage: Coverage[];
+  assessment?: string;
+  explanation?: string;
 }
 
 export enum CoverageType {
@@ -85,16 +83,16 @@ export const DEFAULT_APPLICATION: Application = {
     city: "",
     state: "",
     zipcode: "",
-    naics: [""],
+    naics: [],
   },
   financials: {
-    employee_count: undefined,
-    revenue: undefined,
-    current_assets: undefined,
-    current_liabilities: undefined,
-    total_assets: undefined,
-    total_liabilities: undefined,
-    net_income_loss: undefined,
+    employee_count: 0,
+    revenue: 0,
+    current_assets: 0,
+    current_liabilities: 0,
+    total_assets: 0,
+    total_liabilities: 0,
+    net_income_loss: 0,
     retained_earning: null,
     end_ebit: null,
   },

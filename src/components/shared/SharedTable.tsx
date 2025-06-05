@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   DataTable,
   TableContainer,
@@ -18,31 +18,37 @@ interface TableColumn {
   render?: (row: any) => React.ReactNode;
 }
 
-interface TableProps {
+interface TableProps<T> {
   columns: TableColumn[];
-  rows: any[];
+  rows: T[];
   title?: string;
   description?: string;
   initialPageSize?: number;
   pageSizeOptions?: number[];
+  resetPageSignal?: number;
 }
 
-const SharedTable: React.FC<TableProps> = ({
+const SharedTable = <T,>({
   columns,
   rows = [],
   title,
   description,
   initialPageSize = 10,
-  pageSizeOptions = [10, 20, 30],
-}) => {
+  pageSizeOptions = [10, 20, 50],
+  resetPageSignal,
+}: TableProps<T>) => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(initialPageSize);
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortAsc, setSortAsc] = useState(true);
 
+  useEffect(() => {
+    setPage(1);
+  }, [resetPageSignal, rows]);
+
   const sortedRows = useMemo(() => {
     if (!sortKey) return rows;
-    return [...rows].sort((a, b) => {
+    return [...rows].sort((a: any, b: any) => {
       const aVal = a[sortKey];
       const bVal = b[sortKey];
       if (aVal == null) return 1;
@@ -59,7 +65,7 @@ const SharedTable: React.FC<TableProps> = ({
   }, [sortedRows, page, pageSize]);
 
   const carbonRows = useMemo(() => {
-    return paginatedRows.map((row) => ({
+    return paginatedRows.map((row: any) => ({
       id: row.id,
       ...row,
     }));
@@ -121,7 +127,7 @@ const SharedTable: React.FC<TableProps> = ({
                   const { key, ...restProps } = rowProps;
                   return (
                     <TableRow key={key} {...restProps}>
-                      {row.cells.map((cell, index) => {
+                      {row.cells.map((cell: any, index: number) => {
                         const col = columns.find(
                           (c) => c.id === cell.info.header
                         );

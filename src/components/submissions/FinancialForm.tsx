@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { Button, NumberInput, Grid, Column } from "@carbon/react";
-import { ArrowLeft } from "@carbon/icons-react";
 import { useForm, Controller } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -11,23 +10,23 @@ import styles from "@/styles/pages/submissions.module.scss";
 import { coverageOptions } from "@/constants/coverageOptions";
 import { Application, CoverageType } from "@/types/application";
 import { generateUpdatedApplication } from "@/utils/helpers";
-import { createSubmission } from "@/services/submissionService";
+import { addSubmissions, createSubmission } from "@/services/submissionService";
 import { ApplicationStatus } from "@/constants/status";
+import { useRouter } from "next/navigation";
 
 interface FinancialFormProps {
   application: Application;
   onUpdate: (application: Application) => void;
   onNext: () => void;
   onBack: () => void;
-  isLastStep: boolean;
 }
 
 const schema = yup.object().shape({
   employee_count: yup
     .number()
-    .typeError("Employee count is required")
+    .typeError("Employee count must be a number")
     .required("Employee count is required")
-    .min(0, "Must be zero or more"),
+    .min(0, "Minimum value is 0"),
   revenue: yup
     .number()
     .typeError("Revenue is required")
@@ -56,16 +55,8 @@ const schema = yup.object().shape({
     .array()
     .of(yup.string().required())
     .min(1, "Select at least one coverage"),
-  retained_earning: yup
-    .number()
-    .typeError("Retained earning must be a number")
-    .nullable()
-    .notRequired(),
-  end_ebit: yup
-    .number()
-    .typeError("EBIT must be a number")
-    .nullable()
-    .notRequired(),
+  retained_earning: yup.number().notRequired(),
+  end_ebit: yup.number().notRequired(),
 });
 
 type SchemaFields = keyof typeof schema.fields;
@@ -75,21 +66,22 @@ function FinancialForm({
   onUpdate,
   onNext,
   onBack,
-  isLastStep,
 }: FinancialFormProps) {
   const [toast, setToast] = useState<{
     kind: "error" | "info" | "success" | "warning";
     title: string;
   } | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
   const defaultFormValues = {
-    employee_count: application.financials.employee_count ?? 0,
-    revenue: application.financials.revenue ?? 0,
-    current_assets: application.financials.current_assets ?? 0,
-    current_liabilities: application.financials.current_liabilities ?? 0,
-    total_assets: application.financials.total_assets ?? 0,
-    total_liabilities: application.financials.total_liabilities ?? 0,
-    net_income_loss: application.financials.net_income_loss ?? 0,
+    employee_count: application.financials.employee_count || null,
+    revenue: application.financials.revenue || null,
+    current_assets: application.financials.current_assets || null,
+    current_liabilities: application.financials.current_liabilities || null,
+    total_assets: application.financials.total_assets || null,
+    total_liabilities: application.financials.total_liabilities || null,
+    net_income_loss: application.financials.net_income_loss || null,
     coverage: application.coverage?.map((c: { type: string }) => c.type) || [],
     retained_earning: application.financials.retained_earning ?? null,
     end_ebit: application.financials.end_ebit ?? null,
@@ -100,7 +92,7 @@ function FinancialForm({
     handleSubmit,
     setValue,
     getValues,
-    formState: { errors, touchedFields, isSubmitted, isDirty },
+    formState: { errors, touchedFields, isSubmitted, isDirty, isValid },
   } = useForm({
     mode: "onChange",
     resolver: yupResolver(schema),
@@ -121,6 +113,9 @@ function FinancialForm({
   }, [setValue, getValues]);
 
   const onSubmit = async (_data: any, event: any) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
     const action = event?.nativeEvent?.submitter?.name;
     const values = getValues();
 
@@ -146,58 +141,55 @@ function FinancialForm({
         claims: { count: 0, payout: 0, remarks: "string" },
       }));
 
-    const applicationToProcess = generateUpdatedApplication(
+    let updatedApplication = generateUpdatedApplication(
       {
         ...application,
         financials: updatedFinancials,
         coverage: updatedCoverage,
+        assessment: action === "save" ? ApplicationStatus.CREATED : undefined,
       },
-      true
+      application.submission_reference?.id ? true : false
     );
 
     try {
+      let response;
+
+      if (action === "save") {
+        response = await addSubmissions(updatedApplication);
+      } else if (action === "submit") {
+        response = await createSubmission(updatedApplication);
+      }
+
       if (action === "submit") {
-        const response = await createSubmission(applicationToProcess);
+        setToast({ kind: "success", title: "Submission successful!" });
         sessionStorage.setItem(
           "submissionData",
-          JSON.stringify({
-            ...response,
-            financials: updatedFinancials,
-            coverage: updatedCoverage,
-            assessment: response.assessment || ApplicationStatus.CREATED,
-            explanation: response.explanation || "",
-          })
+          JSON.stringify(updatedApplication)
         );
-        onUpdate({
-          ...applicationToProcess,
-          submission_reference: {
-            ...applicationToProcess.submission_reference,
-            assessment: response.assessment || ApplicationStatus.CREATED,
-            explanation: response.explanation || "",
-          },
-        });
-        setToast({
-          kind: "success",
-          title: "Risk data submitted",
-        });
+        onUpdate(updatedApplication);
         onNext();
-      } else {
-        onUpdate(applicationToProcess);
+      } else if (action === "save") {
         setToast({
           kind: "success",
-          title: "Changes saved",
+          title: updatedApplication.submission_reference?.id
+            ? "Changes saved with new version"
+            : "Submission created and saved!",
         });
+        sessionStorage.setItem(
+          "submissionData",
+          JSON.stringify(updatedApplication)
+        );
+        onUpdate(updatedApplication);
+        router.push("/activity?refresh=true");
       }
     } catch (error: any) {
-      console.error("Failed to submit risk data:", {
-        message: error.message,
-        status: error.status,
-        response: error.response,
-      });
+      console.error("Submission error:", error);
       setToast({
         kind: "error",
         title: error.message || "Submission failed",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -218,10 +210,9 @@ function FinancialForm({
           invalid={isSubmitted || touchedFields[name] ? !!errors[name] : false}
           invalidText={errors[name]?.message as string}
           value={field.value ?? ""}
-          onChange={(_e, { value }) => {
-            const val = value === "" ? null : Number(value);
-            field.onChange(val);
-          }}
+          onChange={(_e, { value }) =>
+            field.onChange(value === "" ? null : Number(value))
+          }
         />
       )}
     />
@@ -232,27 +223,34 @@ function FinancialForm({
     if (currentCoverage.includes(value)) {
       setValue(
         "coverage",
-        currentCoverage.filter((v: string) => v !== value)
+        currentCoverage.filter((v: string) => v !== value),
+        { shouldDirty: true, shouldValidate: true }
       );
     } else {
-      setValue("coverage", [...currentCoverage, value]);
+      setValue("coverage", [...currentCoverage, value], {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
     }
   };
 
   return (
-    <form
-      className={styles.form}
-      onSubmit={handleSubmit(onSubmit)}
-      noValidate
-      aria-label="Financial information form"
-    >
+    <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
+      {toast && (
+        <Toast
+          kind={toast.kind}
+          title={toast.title}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       <div className={styles.topSaveButton}>
         <Button
           kind="tertiary"
           name="save"
           type="submit"
           size="sm"
-          disabled={!isDirty}
+          disabled={isSubmitting || !isDirty || !isValid}
         >
           Save
         </Button>
@@ -260,44 +258,25 @@ function FinancialForm({
 
       <Grid condensed className={styles.grid}>
         <Column sm={4} md={8} lg={6} className={styles.formColumn}>
-          {renderNumberInput(
-            "employee_count",
-            "Total Employee Count",
-            "Enter the total employee count"
-          )}
+          {renderNumberInput("employee_count", "Total Employee Count")}
         </Column>
         <Column sm={4} md={8} lg={6} className={styles.formColumn}>
-          {renderNumberInput("revenue", "Most Recent Year End Revenue")}
+          {renderNumberInput("revenue", "Revenue")}
         </Column>
         <Column sm={4} md={8} lg={6} className={styles.formColumn}>
-          {renderNumberInput(
-            "current_assets",
-            "Most Recent Year End Current Assets"
-          )}
+          {renderNumberInput("current_assets", "Current Assets")}
         </Column>
         <Column sm={4} md={8} lg={6} className={styles.formColumn}>
-          {renderNumberInput(
-            "current_liabilities",
-            "Most Recent Year End Current Liabilities"
-          )}
+          {renderNumberInput("current_liabilities", "Current Liabilities")}
         </Column>
         <Column sm={4} md={8} lg={6} className={styles.formColumn}>
-          {renderNumberInput(
-            "total_assets",
-            "Most Recent Year End Total Assets"
-          )}
+          {renderNumberInput("total_assets", "Total Assets")}
         </Column>
         <Column sm={4} md={8} lg={6} className={styles.formColumn}>
-          {renderNumberInput(
-            "total_liabilities",
-            "Most Recent Year End Total Liabilities"
-          )}
+          {renderNumberInput("total_liabilities", "Total Liabilities")}
         </Column>
         <Column sm={4} md={8} lg={6} className={styles.formColumn}>
-          {renderNumberInput(
-            "net_income_loss",
-            "Most Recent Year Net Income/Loss"
-          )}
+          {renderNumberInput("net_income_loss", "Net Income/Loss")}
         </Column>
         <Column sm={4} md={8} lg={6} className={styles.formColumn}>
           <label className={styles.label}>Coverage Options</label>
@@ -317,8 +296,8 @@ function FinancialForm({
                       key={option.value}
                       className={`${styles.radioLabel} ${
                         selectedValues.includes(option.value)
-                          ? ""
-                          : styles.faded
+                          ? styles.selected
+                          : ""
                       }`}
                     >
                       <input
@@ -326,54 +305,39 @@ function FinancialForm({
                         value={option.value}
                         checked={selectedValues.includes(option.value)}
                         onChange={() => handleCoverageChange(option.value)}
-                        aria-checked={selectedValues.includes(option.value)}
-                        aria-labelledby={`coverage-label-${option.value}`}
                       />
-                      <span id={`coverage-label-${option.value}`}>
-                        {option.label}
-                      </span>
+                      {option.label}
                     </label>
                   ))}
+                  {(isSubmitted || touchedFields.coverage) &&
+                    errors.coverage && (
+                      <p className={styles.errorText}>
+                        {errors.coverage.message}
+                      </p>
+                    )}
                 </div>
               );
             }}
           />
-          {errors.coverage && (isSubmitted || touchedFields.coverage) && (
-            <p className={styles.error}>{errors.coverage.message as string}</p>
-          )}
         </Column>
         <Column sm={4} md={8} lg={6} className={styles.formColumn}>
-          {renderNumberInput(
-            "retained_earning",
-            "Most Recent Year End Retained Earnings"
-          )}
+          {renderNumberInput("retained_earning", "Retained Earnings")}
         </Column>
         <Column sm={4} md={8} lg={6} className={styles.formColumn}>
-          {renderNumberInput("end_ebit", "Most Recent Year End EBIT")}
+          {renderNumberInput("end_ebit", "End EBIT")}
         </Column>
       </Grid>
 
-      <div className={styles.formFooter}>
-        <Button kind="secondary" renderIcon={ArrowLeft} onClick={onBack}>
-          Back
-        </Button>
+      <div className={styles.actionButtons}>
         <Button
           kind="primary"
           name="submit"
           type="submit"
-          disabled={isLastStep}
+          disabled={isSubmitting || !isValid || !isDirty}
         >
           Submit
         </Button>
       </div>
-
-      {toast && (
-        <Toast
-          kind={toast.kind}
-          title={toast.title}
-          onClose={() => setToast(null)}
-        />
-      )}
     </form>
   );
 }

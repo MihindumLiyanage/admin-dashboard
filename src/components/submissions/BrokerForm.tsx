@@ -48,19 +48,29 @@ function BrokerForm({ application, onUpdate, onNext }: BrokerFormProps) {
     control,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<Broker>({
     mode: "onChange",
     resolver: yupResolver(schema),
     defaultValues: {
-      name: application?.broker?.name || "",
-      organization: application?.broker?.organization || "",
-      address: application?.broker?.address || "",
-      city: application?.broker?.city || "",
-      state: application?.broker?.state || "",
-      zipcode: application?.broker?.zipcode || "",
+      name: application.broker.name,
+      organization: application.broker.organization,
+      address: application.broker.address,
+      city: application.broker.city,
+      state: application.broker.state,
+      zipcode: application.broker.zipcode,
     },
   });
+
+  useEffect(() => {
+    setValue("name", application.broker.name);
+    setValue("organization", application.broker.organization);
+    setValue("address", application.broker.address);
+    setValue("city", application.broker.city);
+    setValue("state", application.broker.state);
+    setValue("zipcode", application.broker.zipcode);
+  }, [application, setValue]);
 
   const handleStateInputChange = (input: string) => {
     if (!input) {
@@ -76,18 +86,19 @@ function BrokerForm({ application, onUpdate, onNext }: BrokerFormProps) {
   useEffect(() => {
     const subscription = watch((values) => {
       const updatedBroker: Broker = {
-        name: values.name || "",
-        organization: values.organization || "",
-        address: values.address || "",
-        city: values.city || "",
-        state: values.state || "",
-        zipcode: values.zipcode || "",
+        name: values.name ?? "",
+        organization: values.organization ?? "",
+        address: values.address ?? "",
+        city: values.city ?? "",
+        state: values.state ?? "",
+        zipcode: values.zipcode ?? "",
       };
-
-      onUpdate({
+      const updatedApp: Application = {
         ...application,
         broker: updatedBroker,
-      });
+      };
+      sessionStorage.setItem("APPLICATION_DATA", JSON.stringify(updatedApp));
+      onUpdate(updatedApp);
     });
     return () => subscription.unsubscribe();
   }, [watch, onUpdate, application]);

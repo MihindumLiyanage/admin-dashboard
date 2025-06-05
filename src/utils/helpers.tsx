@@ -5,16 +5,12 @@ export const generateUpdatedApplication = (
   application: any,
   incrementVersion: boolean = false
 ) => {
-  console.log("submission_reference", application.submission_reference);
-  if (
-    application.submission_reference &&
-    application.submission_reference.id &&
-    application.submission_reference.version
-  ) {
+  if (application.submission_reference && application.submission_reference.id) {
     const currentVersion = parseFloat(application.submission_reference.version);
     const updatedVersion = incrementVersion
-      ? (currentVersion + 1).toFixed(1)
+      ? (currentVersion + 1.0).toFixed(1)
       : application.submission_reference.version;
+
     return {
       ...application,
       submission_reference: {

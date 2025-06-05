@@ -8,7 +8,7 @@ import { Button, TextInput, ComboBox, Grid, Column } from "@carbon/react";
 import { ArrowLeft, ArrowRight } from "@carbon/icons-react";
 import { stateList } from "@/constants/stateList";
 import styles from "@/styles/pages/submissions.module.scss";
-import { Application } from "@/types/application";
+import { Application, Insured } from "@/types/application";
 
 interface InsuredFormProps {
   application: Application;
@@ -36,9 +36,16 @@ const schema = yup.object({
     .matches(/^\d{5}$/, "Zipcode must be exactly 5 digits")
     .required("Zipcode is required"),
   naics: yup
-    .string()
-    .matches(/^\d{6}$/, "NAICS must be exactly 6 digits")
-    .required("NAICS is required"),
+    .array()
+    .of(yup.string().matches(/^\d{6}$/, "NAICS must be exactly 6 digits"))
+    .min(1, "At least one NAICS code is required")
+    .required()
+    .transform((value, originalValue) => {
+      if (typeof originalValue === "string") {
+        return originalValue ? [originalValue] : [];
+      }
+      return value.filter((v: string | undefined) => v !== undefined);
+    }),
 });
 
 function InsuredForm({
@@ -52,17 +59,20 @@ function InsuredForm({
     control,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
-  } = useForm({
+  } = useForm<Insured>({
     mode: "onChange",
     resolver: yupResolver(schema),
     defaultValues: {
-      name: application.insured.name || "",
-      address: application.insured.address || "",
-      city: application.insured.city || "",
-      state: application.insured.state || "",
-      zipcode: application.insured.zipcode || "",
-      naics: application.insured.naics?.[0] || "",
+      name: application.insured.name,
+      address: application.insured.address,
+      city: application.insured.city,
+      state: application.insured.state,
+      zipcode: application.insured.zipcode,
+      naics: application.insured.naics.length
+        ? application.insured.naics
+        : [""],
     },
   });
 
@@ -78,18 +88,33 @@ function InsuredForm({
   };
 
   useEffect(() => {
+    setValue("name", application.insured.name);
+    setValue("address", application.insured.address);
+    setValue("city", application.insured.city);
+    setValue("state", application.insured.state);
+    setValue("zipcode", application.insured.zipcode);
+    setValue(
+      "naics",
+      application.insured.naics.length ? application.insured.naics : [""]
+    );
+  }, [application, setValue]);
+
+  useEffect(() => {
     const subscription = watch((values) => {
-      onUpdate({
+      const updatedInsured: Insured = {
+        name: values.name ?? "",
+        address: values.address ?? "",
+        city: values.city ?? "",
+        state: values.state ?? "",
+        zipcode: values.zipcode ?? "",
+        naics: (values.naics ?? []).filter((v): v is string => v !== undefined),
+      };
+      const updatedApp: Application = {
         ...application,
-        insured: {
-          name: values.name || "",
-          address: values.address || "",
-          city: values.city || "",
-          state: values.state || "",
-          zipcode: values.zipcode || "",
-          naics: [values.naics || ""],
-        },
-      });
+        insured: updatedInsured,
+      };
+      sessionStorage.setItem("APPLICATION_DATA", JSON.stringify(updatedApp));
+      onUpdate(updatedApp);
     });
     return () => subscription.unsubscribe();
   }, [watch, onUpdate, application]);
@@ -123,7 +148,6 @@ function InsuredForm({
             )}
           />
         </Column>
-
         <Column sm={4} md={8} lg={8} className={styles.formColumn}>
           <Controller
             name="address"
@@ -141,7 +165,6 @@ function InsuredForm({
             )}
           />
         </Column>
-
         <Column sm={4} md={8} lg={4} className={styles.formColumn}>
           <Controller
             name="city"
@@ -159,7 +182,6 @@ function InsuredForm({
             )}
           />
         </Column>
-
         <Column sm={4} md={8} lg={4} className={styles.formColumn}>
           <Controller
             name="state"
@@ -186,7 +208,6 @@ function InsuredForm({
             )}
           />
         </Column>
-
         <Column sm={4} md={8} lg={4} className={styles.formColumn}>
           <Controller
             name="zipcode"
@@ -210,7 +231,6 @@ function InsuredForm({
             )}
           />
         </Column>
-
         <Column sm={4} md={8} lg={4} className={styles.formColumn}>
           <Controller
             name="naics"
@@ -220,15 +240,20 @@ function InsuredForm({
                 id="applicant_naics-input"
                 labelText="NAICS"
                 placeholder="Enter 6 Digit NAICS"
-                {...field}
-                invalid={!!errors.naics}
-                invalidText={errors.naics?.message as string}
+                value={field.value[0] || ""}
                 onChange={(e) => {
                   const val = e.target.value;
                   if (/^\d{0,6}$/.test(val)) {
-                    field.onChange(val);
+                    field.onChange([val]);
                   }
                 }}
+                onBlur={field.onBlur}
+                invalid={!!errors.naics}
+                invalidText={
+                  errors.naics?.message ||
+                  errors.naics?.[0]?.message ||
+                  "Invalid NAICS"
+                }
                 light={false}
               />
             )}

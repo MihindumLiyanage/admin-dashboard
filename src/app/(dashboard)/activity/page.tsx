@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState, useEffect, useCallback, useMemo } from "react";
+import { memo, useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   Search,
   Select,
@@ -8,173 +8,222 @@ import {
   InlineLoading,
   Button,
 } from "@carbon/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   fetchSubmissionsByFilter,
   fetchSubmissionById,
-  SubmissionItem,
 } from "@/services/submissionService";
-import { ApplicationStatus } from "@/constants/status";
+import { Application } from "@/types/application";
 import styles from "@/styles/pages/activity.module.scss";
 import SharedTable from "@/components/shared/SharedTable";
+import { ApplicationStatus } from "@/constants/status";
 
-// Interface for table row data
 interface RowData {
   id: string;
   name: string;
   version: string;
   coverage: string;
   assessment: string;
+  brokerName: string;
 }
 
+const useDebounce = (callback: (value: string) => void, delay: number) => {
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const debouncedFunction = useCallback(
+    (value: string) => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => callback(value), delay);
+    },
+    [callback, delay]
+  );
+  useEffect(
+    () => () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    },
+    []
+  );
+  return debouncedFunction;
+};
+
 const Activity = () => {
-  const [allRows, setAllRows] = useState<RowData[]>([]);
-  const [filteredRows, setFilteredRows] = useState<RowData[]>([]);
-  const [searchValue, setSearchValue] = useState("");
-  const [decisionFilter, setDecisionFilter] = useState("");
+  const [rows, setRows] = useState<RowData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [editLoading, setEditLoading] = useState<string | null>(null);
-  const [tableKey, setTableKey] = useState(0);
+  const [searchValue, setSearchValue] = useState("");
+  const [decisionFilter, setDecisionFilter] = useState("");
+  const [editLoadingId, setEditLoadingId] = useState<string | null>(null);
+  const [editErrors, setEditErrors] = useState<Record<string, string>>({});
+
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const debouncedSetSearch = useDebounce(setSearchValue, 300);
 
   const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
-    try {
-      const submissions = await fetchSubmissionsByFilter("submissions");
-      const quotes = await fetchSubmissionsByFilter("quotes");
+    setEditErrors({});
 
-      // Merge submissions with quotes based on submission ID
-      const mergedSubmissions = submissions.map((submission) => {
-        const matchingQuote = quotes.find(
-          (quote) =>
-            quote.submission_reference.id === submission.submission_reference.id
+    try {
+      const [submissions, quotes] = await Promise.all([
+        fetchSubmissionsByFilter("submissions"),
+        fetchSubmissionsByFilter("quotes"),
+      ]);
+
+      const merged = submissions.map((sub: Application) => {
+        const quote = quotes.find(
+          (q: Application) =>
+            q.submission_reference.id === sub.submission_reference.id
         );
-        return matchingQuote
-          ? { ...submission, assessment: matchingQuote.assessment }
-          : submission;
+        return quote
+          ? {
+              ...sub,
+              assessment: quote.assessment,
+            }
+          : sub;
       });
 
-      // Transform merged data into table row format
-      const transformedRows: RowData[] = mergedSubmissions.map(
-        (item: SubmissionItem) => ({
-          id: item.submission_reference.id,
-          name: item.insured.name,
-          version: item.submission_reference.version,
-          coverage: item.coverage.map((coverage) => coverage.type).join(" / "),
-          assessment: item.assessment || "CREATED",
-        })
-      );
+      const transformed: RowData[] = merged.map((item: Application) => ({
+        id: item.submission_reference.id,
+        name: item.insured.name,
+        version: item.submission_reference.version,
+        coverage: item.coverage.map((c) => c.type).join(" / "),
+        brokerName: item.broker.name,
+        assessment: item.assessment || "CREATED",
+      }));
 
-      setAllRows(transformedRows);
-      setFilteredRows(transformedRows);
-      setTableKey((prev) => prev + 1);
+      setRows(transformed);
     } catch (e: any) {
-      setError(e.message || "Failed to load data");
-      console.error("Error loading data:", e);
+      setError(
+        e?.response?.data?.message || e?.message || "Failed to load data"
+      );
+      setRows([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Fetch data on component mount
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    const refresh = searchParams.get("refresh");
+    if (refresh === "true") {
+      loadData();
+      router.replace("/activity");
+    } else {
+      loadData();
+    }
+  }, [loadData, searchParams, router]);
 
-  const applyFilters = useCallback(() => {
-    const filtered = allRows.filter((row) => {
-      const matchesName = (row.name ?? "")
+  const filteredRows = useMemo(() => {
+    if (loading) return [];
+    return rows.filter((row) => {
+      const nameMatch = row.name
         .toLowerCase()
         .includes(searchValue.toLowerCase());
-      const matchesDecision =
+      const decisionMatch =
         !decisionFilter || row.assessment === decisionFilter;
-      return matchesName && matchesDecision;
+      return nameMatch && decisionMatch;
     });
-    setFilteredRows(filtered);
-    setTableKey((prev) => prev + 1);
-  }, [allRows, searchValue, decisionFilter]);
+  }, [rows, searchValue, decisionFilter, loading]);
 
-  // Apply filters when search or decision filter changes
-  useEffect(() => {
-    if (!loading) applyFilters();
-  }, [searchValue, decisionFilter, applyFilters]);
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      debouncedSetSearch(e.target.value);
+    },
+    [debouncedSetSearch]
+  );
 
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchValue(event.target.value);
-  };
-
-  const handleDecisionFilter = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    setDecisionFilter(event.target.value);
-  };
+  const handleDecisionChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setDecisionFilter(e.target.value);
+    },
+    []
+  );
 
   const handleEdit = useCallback(
     async (id: string) => {
-      setEditLoading(id);
-      setError(null);
+      const row = rows.find((r) => r.id === id);
+      if (!row) return;
+      if (
+        [ApplicationStatus.ACCEPTED, ApplicationStatus.REJECTED].includes(
+          row.assessment as ApplicationStatus
+        )
+      ) {
+        console.warn("Editing is not allowed for this status.");
+        return;
+      }
+
+      setEditLoadingId(id);
+      setEditErrors((prev) => ({ ...prev, [id]: "" }));
+
       try {
         const data = await fetchSubmissionById(id);
         sessionStorage.setItem("submissionData", JSON.stringify(data));
         router.push(
           `/submissions?submission_id=${encodeURIComponent(id)}&step=financial`
         );
-      } catch (error) {
-        console.error("Failed to fetch submission for edit:", error);
-        setError("Failed to load submission data. Please try again.");
+      } catch (e: any) {
+        setEditErrors((prev) => ({
+          ...prev,
+          [id]:
+            e?.response?.data?.message ||
+            e?.message ||
+            "Failed to load submission data",
+        }));
       } finally {
-        setEditLoading(null);
+        setEditLoadingId(null);
       }
     },
-    [router]
+    [rows, router]
   );
 
-  // Memoize columns to prevent unnecessary re-renders
+  const renderActions = useCallback(
+    (row: RowData) => {
+      const disabled = [
+        ApplicationStatus.ACCEPTED,
+        ApplicationStatus.REJECTED,
+      ].includes(row.assessment as ApplicationStatus);
+      return (
+        <div>
+          <Button
+            size="sm"
+            kind="primary"
+            onClick={() => handleEdit(row.id)}
+            disabled={disabled || editLoadingId === row.id}
+          >
+            {editLoadingId === row.id ? "Loading..." : "Edit"}
+          </Button>
+          {editErrors[row.id] && (
+            <p className={styles.rowError} role="alert">
+              {editErrors[row.id]}
+            </p>
+          )}
+        </div>
+      );
+    },
+    [editErrors, handleEdit, editLoadingId]
+  );
+
   const columns = useMemo(
     () => [
       { id: "id", header: "User ID", sortable: true },
       { id: "name", header: "Insured Name", sortable: true },
       { id: "version", header: "Version", sortable: true },
       { id: "coverage", header: "Coverage Type", sortable: true },
+      { id: "brokerName", header: "Broker Name", sortable: true },
       { id: "assessment", header: "Decision", sortable: true },
-      {
-        id: "actions",
-        header: "Actions",
-        render: (row: RowData) => {
-          const isLocked = [
-            ApplicationStatus.ACCEPTED,
-            ApplicationStatus.REJECTED,
-          ].includes(row.assessment as ApplicationStatus);
-
-          return (
-            <Button
-              size="sm"
-              kind={isLocked ? "ghost" : "primary"}
-              disabled={isLocked || editLoading === row.id}
-              onClick={() => handleEdit(row.id)}
-              className={isLocked ? styles.disabledEdit : ""}
-              title={
-                isLocked
-                  ? "Editing is not allowed for this status"
-                  : "Edit submission"
-              }
-            >
-              {editLoading === row.id ? (
-                <InlineLoading description="Loading..." />
-              ) : isLocked ? (
-                "Locked"
-              ) : (
-                "Edit"
-              )}
-            </Button>
-          );
-        },
-      },
+      { id: "actions", header: "Actions", render: renderActions },
     ],
-    [handleEdit, editLoading]
+    [renderActions]
   );
+
+  if (loading) {
+    return (
+      <div className={styles.root}>
+        <div className={styles.loadingContainer}>
+          <InlineLoading description="Loading submissions data..." />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.root}>
@@ -182,12 +231,13 @@ const Activity = () => {
         <div className={styles.toolbarRow}>
           <div className={styles.tileGrid2}>
             <label className={styles.filterLabel}>
-              Broker Name:
+              Insured Name:
               <Search
                 className={styles.searchInput}
-                labelText="Search"
-                onChange={handleSearch}
-                value={searchValue}
+                labelText="Search by insured name"
+                placeholder="Enter insured name..."
+                onChange={handleSearchChange}
+                aria-label="Search submissions by insured name"
               />
             </label>
             <label className={styles.filterLabel}>
@@ -195,41 +245,41 @@ const Activity = () => {
               <Select
                 id="decision-select"
                 className={styles.searchInput}
-                noLabel
-                onChange={handleDecisionFilter}
+                labelText=""
+                onChange={handleDecisionChange}
                 value={decisionFilter}
+                aria-label="Filter by decision status"
               >
-                <option value="">DEFAULT</option>
-                {Object.values(ApplicationStatus)
-                  .slice(0, 4)
-                  .map((status) => (
-                    <option key={status} value={status}>
-                      {status}
-                    </option>
-                  ))}
+                <option value="">All</option>
+                {Object.values(ApplicationStatus).map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
               </Select>
             </label>
           </div>
-          <Button className={styles.fetchButton} onClick={loadData}>
-            Fetch Data
+          <Button
+            className={styles.fetchButton}
+            onClick={loadData}
+            disabled={loading}
+            aria-label="Refresh submissions data"
+          >
+            {loading ? "Loading..." : "Fetch Data"}
           </Button>
         </div>
       </TableToolbar>
-      {loading ? (
-        <InlineLoading description="Loading data..." />
-      ) : error ? (
-        <p className={styles.error}>Error: {error}</p>
-      ) : (
-        <SharedTable
-          key={tableKey}
-          rows={filteredRows}
-          columns={columns}
-          initialPageSize={10}
-          pageSizeOptions={[10, 20, 50]}
-          title="Activity Submissions"
-          description="List of user submissions"
-        />
-      )}
+
+      <SharedTable
+        rows={filteredRows}
+        columns={columns}
+        initialPageSize={10}
+        pageSizeOptions={[10, 20, 50]}
+        title="Activity Submissions"
+        description={`${filteredRows.length} submission${
+          filteredRows.length !== 1 ? "s" : ""
+        } found`}
+      />
     </div>
   );
 };

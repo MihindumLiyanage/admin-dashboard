@@ -4,5 +4,4 @@ export enum ApplicationStatus {
   DECLINED = "DECLINED",
   ACCEPTED = "ACCEPTED",
   REJECTED = "REJECTED",
-  REFERRAL = "REFERRAL",
 }

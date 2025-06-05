@@ -24,14 +24,13 @@
 .filterLabel {
   font-weight: 600;
   font-size: 0.9rem;
-  color: #3e3e3e;
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
 }
 
 .searchInput {
-  width: 200px;
+  width: 250px;
 }
 
 .disabledEdit {
@@ -47,4 +46,10 @@
 
 .fetchButton {
   align-self: flex-end;
+}
+
+.rowError {
+  color: red;
+  font-size: 12px;
+  margin-top: 4px;
 }
