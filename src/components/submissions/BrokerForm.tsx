@@ -107,6 +107,25 @@ function BrokerForm({ application, onUpdate, onNext }: BrokerFormProps) {
     onNext();
   };
 
+  useEffect(() => {
+    const storedData = sessionStorage.getItem("APPLICATION_DATA");
+    if (storedData) {
+      try {
+        const parsedApp = JSON.parse(storedData);
+        if (parsedApp?.broker) {
+          setValue("name", parsedApp.broker.name);
+          setValue("organization", parsedApp.broker.organization);
+          setValue("address", parsedApp.broker.address);
+          setValue("city", parsedApp.broker.city);
+          setValue("state", parsedApp.broker.state);
+          setValue("zipcode", parsedApp.broker.zipcode);
+        }
+      } catch (e) {
+        console.error("Failed to parse stored application data", e);
+      }
+    }
+  }, [setValue]);
+
   return (
     <form
       className={styles.form}

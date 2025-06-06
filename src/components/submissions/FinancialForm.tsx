@@ -60,12 +60,7 @@ const schema = yup.object().shape({
 
 type SchemaFields = keyof typeof schema.fields;
 
-function FinancialForm({
-  application,
-  onUpdate,
-  onNext,
-  onBack,
-}: FinancialFormProps) {
+function FinancialForm({ application, onUpdate, onNext }: FinancialFormProps) {
   const [toast, setToast] = useState<{
     kind: "error" | "info" | "success" | "warning";
     title: string;
@@ -73,16 +68,16 @@ function FinancialForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const defaultFormValues = {
-    employee_count: application.financials.employee_count || null,
-    revenue: application.financials.revenue || null,
-    current_assets: application.financials.current_assets || null,
-    current_liabilities: application.financials.current_liabilities || null,
-    total_assets: application.financials.total_assets || null,
-    total_liabilities: application.financials.total_liabilities || null,
-    net_income_loss: application.financials.net_income_loss || null,
-    coverage: application.coverage?.map((c: { type: string }) => c.type) || [],
-    retained_earning: application.financials.retained_earning ?? null,
-    end_ebit: application.financials.end_ebit ?? null,
+    employee_count: application.financials.employee_count ?? 0,
+    revenue: application.financials.revenue ?? 0,
+    current_assets: application.financials.current_assets ?? 0,
+    current_liabilities: application.financials.current_liabilities ?? 0,
+    total_assets: application.financials.total_assets ?? 0,
+    total_liabilities: application.financials.total_liabilities ?? 0,
+    net_income_loss: application.financials.net_income_loss ?? 0,
+    coverage: application.coverage?.map((c) => c.type) || [],
+    retained_earning: application.financials.retained_earning ?? undefined,
+    end_ebit: application.financials.end_ebit ?? undefined,
   };
 
   const {
@@ -212,9 +207,9 @@ function FinancialForm({
           placeholder={placeholder}
           invalid={isSubmitted || touchedFields[name] ? !!errors[name] : false}
           invalidText={errors[name]?.message as string}
-          value={field.value ?? ""}
+          value={field.value === 0 || field.value === null ? "" : field.value}
           onChange={(_e, { value }) =>
-            field.onChange(value === "" ? null : Number(value))
+            field.onChange(value === "" ? 0 : Number(value))
           }
         />
       )}

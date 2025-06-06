@@ -38,6 +38,7 @@ function Decision({ application, onUpdate, onBack }: DecisionProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [declineReason, setDeclineReason] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -84,24 +85,31 @@ function Decision({ application, onUpdate, onBack }: DecisionProps) {
   }, [toast]);
 
   const handleAccept = async () => {
+    setIsSubmitting(true);
     try {
       const reviewPayload = {
         submission_reference: application.submission_reference,
         assessment: ApplicationStatus.ACCEPTED,
-        explanation: "Application accepted based on review.",
+        explanation: "",
         issue_date: new Date().toISOString(),
       };
 
-      const response = await submitSubmissionReview(
+      await submitSubmissionReview(
         application.submission_reference.id,
         reviewPayload
       );
 
+      const updatedData = await fetchSubmissionById(
+        application.submission_reference.id,
+        application.carrier,
+        application.submission_reference.version
+      );
+
       const updatedApplication = {
         ...application,
-        assessment: response.assessment,
-        explanation: response.explanation,
-        issue_date: response.issue_date,
+        assessment: updatedData.assessment || ApplicationStatus.ACCEPTED,
+        explanation: "",
+        issue_date: updatedData.issue_date || reviewPayload.issue_date,
       };
 
       onUpdate(updatedApplication);
@@ -120,28 +128,37 @@ function Decision({ application, onUpdate, onBack }: DecisionProps) {
         kind: "error",
         title: "Failed to approve submission",
       });
+      setIsSubmitting(false);
+      return;
     }
   };
 
   const handleConfirmReject = async () => {
+    setIsSubmitting(true);
     try {
       const reviewPayload = {
         submission_reference: application.submission_reference,
-        assessment: ApplicationStatus.DECLINED,
+        assessment: ApplicationStatus.REJECTED,
         explanation: declineReason.trim() || "No reason provided.",
         issue_date: new Date().toISOString(),
       };
 
-      const response = await submitSubmissionReview(
+      await submitSubmissionReview(
         application.submission_reference.id,
         reviewPayload
       );
 
+      const updatedData = await fetchSubmissionById(
+        application.submission_reference.id,
+        application.carrier,
+        application.submission_reference.version
+      );
+
       const updatedApplication = {
         ...application,
-        assessment: response.assessment,
-        explanation: response.explanation,
-        issue_date: response.issue_date,
+        assessment: updatedData.assessment || ApplicationStatus.DECLINED,
+        explanation: updatedData.explanation || reviewPayload.explanation,
+        issue_date: updatedData.issue_date || reviewPayload.issue_date,
       };
 
       onUpdate(updatedApplication);
@@ -163,6 +180,8 @@ function Decision({ application, onUpdate, onBack }: DecisionProps) {
         kind: "error",
         title: "Failed to decline submission",
       });
+      setIsSubmitting(false);
+      return;
     }
   };
 
@@ -231,7 +250,7 @@ function Decision({ application, onUpdate, onBack }: DecisionProps) {
           kind="primary"
           onClick={handleAccept}
           size="lg"
-          disabled={application.assessment === ApplicationStatus.ACCEPTED}
+          disabled={isSubmitting}
         >
           Accept
         </Button>
@@ -239,7 +258,7 @@ function Decision({ application, onUpdate, onBack }: DecisionProps) {
           kind="danger"
           onClick={() => setIsModalOpen(true)}
           size="lg"
-          disabled={application.assessment === ApplicationStatus.REJECTED}
+          disabled={isSubmitting}
         >
           Reject
         </Button>
@@ -281,16 +300,9 @@ function Decision({ application, onUpdate, onBack }: DecisionProps) {
               <p>
                 <strong>Status:</strong> {application.assessment}
               </p>
-              {(application.assessment === ApplicationStatus.DECLINED ||
-                application.assessment === ApplicationStatus.ACCEPTED) && (
+              {application.assessment === ApplicationStatus.DECLINED && (
                 <p>
-                  <strong>
-                    {application.assessment === ApplicationStatus.DECLINED
-                      ? "Decline"
-                      : "Approval"}{" "}
-                    Reason:
-                  </strong>{" "}
-                  {application.explanation || "No reason provided"}
+                  <strong>Decline Reason:</strong> {application.explanation}
                 </p>
               )}
             </Column>

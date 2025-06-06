@@ -37,15 +37,14 @@ const schema = yup.object({
     .required("Zipcode is required"),
   naics: yup
     .array()
-    .of(yup.string().matches(/^\d{6}$/, "NAICS must be exactly 6 digits"))
+    .of(
+      yup
+        .string()
+        .matches(/^\d{6}$/, "NAICS must be exactly 6 digits")
+        .required("NAICS code is required")
+    )
     .min(1, "At least one NAICS code is required")
-    .required()
-    .transform((value, originalValue) => {
-      if (typeof originalValue === "string") {
-        return originalValue ? [originalValue] : [];
-      }
-      return value.filter((v: string | undefined) => v !== undefined);
-    }),
+    .required("NAICS code is required"),
 });
 
 function InsuredForm({

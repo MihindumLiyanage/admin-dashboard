@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <link rel="icon" href="/images/icon.png" />
-      <title>{`| ${pageTitle}`}</title>
+      <title>{` Dashboard | ${pageTitle}`}</title>
       <body>
         <AppProviders>{children}</AppProviders>
       </body>
