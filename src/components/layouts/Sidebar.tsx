@@ -60,22 +60,22 @@ export const Sidebar = React.memo(() => {
                 >
                   {item.subItems.map((sub) => (
                     <SideNavMenuItem key={sub.name}>
-                      <Link href={sub.path}>{sub.name}</Link>
+                      <Link href={sub.path} passHref legacyBehavior>
+                        <a>{sub.name}</a>
+                      </Link>
                     </SideNavMenuItem>
                   ))}
                 </SideNavMenu>
               ) : (
-                <SideNavLink
-                  key={item.id}
-                  renderIcon={item.icon}
-                  href={item.href}
-                >
-                  {item.label}
-                </SideNavLink>
+                <Link key={item.id} href={item.href} passHref legacyBehavior>
+                  <SideNavLink renderIcon={item.icon}>{item.label}</SideNavLink>
+                </Link>
               )
             )
           ) : (
-            <SideNavLink href="/home">Home</SideNavLink>
+            <Link href="/home" passHref legacyBehavior>
+              <SideNavLink>Home</SideNavLink>
+            </Link>
           )}
         </SideNavItems>
       </SideNav>
