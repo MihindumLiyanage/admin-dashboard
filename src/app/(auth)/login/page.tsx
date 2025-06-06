@@ -9,7 +9,9 @@ import { useState } from "react";
 import Toast from "@/components/common/Toast";
 import { authService } from "@/services/authService";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import styles from "@/styles/pages/auth.module.scss";
+import { Sun, Moon } from "@carbon/icons-react";
 
 interface LoginFormData {
   email: string;
@@ -32,6 +34,7 @@ export default function LoginPage() {
 
   const router = useRouter();
   const { login } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -54,8 +57,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} data-theme={theme}>
       <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+        <div className={styles.themeToggle} onClick={toggleTheme}>
+          {theme === "white" ? <Moon size={24} /> : <Sun size={24} />}
+        </div>
+
         <img
           src="/images/logo.png"
           alt="Login Illustration"
@@ -101,7 +108,9 @@ export default function LoginPage() {
 
         <div className={styles.actions}>
           <a href="/forgot-password">Forgot your password?</a>
-          <Button type="submit">Login</Button>
+          <Button type="submit" className={styles.loginButton}>
+            Login
+          </Button>
         </div>
       </form>
     </div>

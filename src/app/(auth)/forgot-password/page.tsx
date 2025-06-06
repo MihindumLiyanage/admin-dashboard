@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { authService } from "@/services/authService";
 import Toast from "@/components/common/Toast";
+import { useTheme } from "@/contexts/ThemeContext";
+import { Sun, Moon } from "@carbon/icons-react";
 import styles from "@/styles/pages/auth.module.scss";
 
 interface ForgotPasswordFormData {
@@ -31,6 +33,8 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  const { theme, toggleTheme } = useTheme();
+
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setError("");
     setSuccess("");
@@ -49,11 +53,15 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} data-theme={theme}>
       <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+        <div className={styles.themeToggle} onClick={toggleTheme}>
+          {theme === "white" ? <Moon size={24} /> : <Sun size={24} />}
+        </div>
+
         <img
           src="/images/logo.png"
-          alt="Login Illustration"
+          alt="Reset Illustration"
           className={styles.heroImage}
           loading="lazy"
         />
@@ -86,10 +94,12 @@ export default function ForgotPasswordPage() {
           invalidText={errors.email?.message}
         />
 
-        <p className={styles.actions}>
+        <div className={styles.actions}>
           <a href="/login">Login</a>
-          <Button type="submit">Send Reset Link</Button>
-        </p>
+          <Button type="submit" className={styles.loginButton}>
+            Send Reset Link
+          </Button>
+        </div>
       </form>
     </div>
   );

@@ -3,29 +3,24 @@
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background: var(--cds-ui-background, #f4f4f4);
+  background: var(--background-color);
   padding: 1rem;
-}
 
-.heroImage {
-  width: 100%;
-  max-width: 400px;
-  margin-bottom: 1.5rem;
-  border-radius: 1rem;
-  box-shadow: 0 8px 20px rgba(15, 98, 254, 0.25);
-  object-fit: cover;
-  transition: transform 0.3s ease;
+  &[data-theme="white"] {
+    --background-color: #f4f4f4;
+  }
 
-  &:hover {
-    transform: scale(1.05);
+  &[data-theme="g100"] {
+    --background-color: #0b0b0b;
   }
 }
 
 .form {
+  position: relative;
   background: var(--cds-layer, #ffffff);
   padding: 2rem;
   border-radius: 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(2, 2, 2, 0.08);
   width: 100%;
   max-width: 400px;
 
@@ -40,11 +35,42 @@
     margin-top: 1rem;
   }
 }
+
+.themeToggle {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  color: inherit;
+  z-index: 1;
+
+  svg {
+    fill: currentColor;
+  }
+}
+
+.heroImage {
+  width: 100%;
+  max-width: 400px;
+  margin: 2rem auto 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 8px 20px rgba(15, 98, 254, 0.25);
+  object-fit: cover;
+  transition: transform 0.3s ease;
+  display: block;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
 .actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
 
   a {
     font-size: 0.875rem;
@@ -55,22 +81,12 @@
       text-decoration: underline;
     }
   }
-
-  button {
-    padding: 0.5rem 1rem;
-  }
 }
 
-.link {
-  margin-top: 1rem;
-  font-size: 0.875rem;
-
-  a {
-    color: var(--cds-link-primary, #0f62fe);
-    text-decoration: none;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
+.loginButton {
+  padding: 0.5rem 1rem !important;
+  border-radius: 999px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
