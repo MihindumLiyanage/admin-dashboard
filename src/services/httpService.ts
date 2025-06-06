@@ -1,12 +1,13 @@
+import { API_CONFIG } from "@/constants/config";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
 const instance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
+  baseURL: API_CONFIG.BASE_URL,
   timeout: 30000,
   headers: {
     Accept: "application/json",
     "Content-Type": "application/json",
-    "X-API-KEY": process.env.NEXT_PUBLIC_API_TOKEN,
+    "X-API-KEY": API_CONFIG.API_TOKEN,
   },
 });
 
