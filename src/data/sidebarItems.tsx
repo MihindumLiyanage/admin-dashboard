@@ -13,8 +13,8 @@ export type SidebarItem = {
 
 export const sidebarItems: SidebarItem[] = [
   {
-    id: "home",
-    label: "Home",
+    id: "dashboard",
+    label: "Dashboard",
     icon: Dashboard,
     href: "/home",
   },

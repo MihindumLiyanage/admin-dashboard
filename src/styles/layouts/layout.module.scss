@@ -3,11 +3,9 @@
 @use "@carbon/styles/scss/colors" as *;
 @use "@carbon/styles/scss/utilities/convert" as *;
 
-// Consistent variables
 $sidebar-width: 0rem;
 $sidebar-collapsed-width: 3rem;
 
-// Layout
 .layout {
   display: flex;
   height: 100vh;

@@ -14,9 +14,14 @@ export default function RootLayout({
 }) {
   const pathname = usePathname();
 
+  const authPageTitles: Record<string, string> = {
+    "/login": "Login",
+    "/forgot-password": "Forgot Password",
+  };
+
   const activeItem = sidebarItems.find((item) => item.href === pathname);
 
-  const pageTitle = activeItem ? activeItem.label : "Unknown Page";
+  const pageTitle = activeItem?.label || authPageTitles[pathname];
 
   return (
     <html lang="en">

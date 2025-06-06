@@ -1,6 +1,9 @@
+@use "@carbon/styles/scss/spacing" as *;
+@use "@carbon/styles/scss/colors" as *;
+
 .header {
   position: relative;
-  padding: 0 spacing(05);
+  padding: 0 get-spacing(5);
   background-color: var(--cds-ui-01);
   border-bottom: 1px solid var(--cds-border-subtle);
   display: flex;
