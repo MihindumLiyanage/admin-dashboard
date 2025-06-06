@@ -3,7 +3,7 @@
 @use "@carbon/styles/scss/colors" as *;
 
 $sidebar-width: 16rem;
-$sidebar-collapsed-width: 3rem;
+$sidebar-collapsed-width: 0rem;
 
 .sidebar {
   width: $sidebar-width;
@@ -60,7 +60,7 @@ $sidebar-collapsed-width: 3rem;
 }
 
 .logo {
-  max-width: 150px;
-  height: auto;
+  display: block;
+  margin: 0 auto;
   padding-left: spacing(05);
 }

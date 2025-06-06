@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
   SideNav,
@@ -17,6 +17,11 @@ import styles from "@/styles/layouts/sidebar.module.scss";
 
 export const Sidebar = React.memo(() => {
   const { isOpen, toggle } = useSidebar();
+  const router = useRouter();
+
+  const handleNavigation = (href: string) => {
+    router.push(href);
+  };
 
   return (
     <aside className={`${styles.sidebar} ${!isOpen ? styles.collapsed : ""}`}>
@@ -60,22 +65,33 @@ export const Sidebar = React.memo(() => {
                 >
                   {item.subItems.map((sub) => (
                     <SideNavMenuItem key={sub.name}>
-                      <Link href={sub.path} passHref legacyBehavior>
-                        <a>{sub.name}</a>
-                      </Link>
+                      <a
+                        href={sub.path}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleNavigation(sub.path);
+                        }}
+                        style={{ textDecoration: "none", color: "inherit" }}
+                      >
+                        {sub.name}
+                      </a>
                     </SideNavMenuItem>
                   ))}
                 </SideNavMenu>
               ) : (
-                <Link key={item.id} href={item.href} passHref legacyBehavior>
-                  <SideNavLink renderIcon={item.icon}>{item.label}</SideNavLink>
-                </Link>
+                <SideNavLink
+                  key={item.id}
+                  renderIcon={item.icon}
+                  onClick={() => handleNavigation(item.href)}
+                >
+                  {item.label}
+                </SideNavLink>
               )
             )
           ) : (
-            <Link href="/home" passHref legacyBehavior>
-              <SideNavLink>Home</SideNavLink>
-            </Link>
+            <SideNavLink onClick={() => handleNavigation("/home")}>
+              Home
+            </SideNavLink>
           )}
         </SideNavItems>
       </SideNav>
