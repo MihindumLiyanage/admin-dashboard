@@ -65,8 +65,8 @@ const SharedTable = <T,>({
   }, [sortedRows, page, pageSize]);
 
   const carbonRows = useMemo(() => {
-    return paginatedRows.map((row: any) => ({
-      id: row.id,
+    return paginatedRows.map((row: any, index: number) => ({
+      id: row.id || `row-${index}`,
       ...row,
     }));
   }, [paginatedRows]);
@@ -125,15 +125,22 @@ const SharedTable = <T,>({
                 rows.map((row) => {
                   const rowProps = getRowProps({ row });
                   const { key, ...restProps } = rowProps;
+                  const originalRowData = carbonRows.find(
+                    (r) => r.id === row.id
+                  );
+
                   return (
                     <TableRow key={key} {...restProps}>
                       {row.cells.map((cell: any, index: number) => {
                         const col = columns.find(
                           (c) => c.id === cell.info.header
                         );
+
                         return (
                           <TableCell key={index}>
-                            {col?.render ? col.render(row) : cell.value}
+                            {col?.render && originalRowData
+                              ? col.render(originalRowData)
+                              : cell.value}
                           </TableCell>
                         );
                       })}
