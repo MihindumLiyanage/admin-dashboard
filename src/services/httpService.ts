@@ -3,6 +3,10 @@ import { API_CONFIG } from "@/constants/config";
 
 const instance = axios.create({
   baseURL: API_CONFIG.BASE_URL,
+  timeout: 30000,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 instance.interceptors.request.use((config) => {
