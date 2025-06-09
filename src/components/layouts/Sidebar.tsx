@@ -42,7 +42,11 @@ export const Sidebar = React.memo(() => {
           className={styles.toggleButton}
           aria-label="Toggle sidebar"
         >
-          {isOpen ? <Menu size={20} /> : <ChevronRight size={20} />}
+          {isOpen ? (
+            <Menu size={20} />
+          ) : (
+            <ChevronRight size={20} style={{ marginLeft: "8px" }} />
+          )}
         </button>
       </div>
       <SideNav

@@ -194,7 +194,7 @@ function FinancialForm({ application, onUpdate, onNext }: FinancialFormProps) {
   const renderNumberInput = (
     name: Exclude<SchemaFields, "coverage">,
     label: string,
-    placeholder = ""
+    placeholder: string
   ) => (
     <Controller
       key={name}
@@ -247,7 +247,6 @@ function FinancialForm({ application, onUpdate, onNext }: FinancialFormProps) {
           kind="tertiary"
           name="save"
           type="submit"
-          size="sm"
           disabled={isSubmitting || !isDirty || !isValid}
         >
           Save
@@ -256,25 +255,49 @@ function FinancialForm({ application, onUpdate, onNext }: FinancialFormProps) {
 
       <Grid condensed className={styles.grid}>
         <Column sm={4} md={8} lg={6} className={styles.formColumn}>
-          {renderNumberInput("employee_count", "Total Employee Count")}
+          {renderNumberInput(
+            "employee_count",
+            "Total Employee Count",
+            "Enter total Employee Count"
+          )}
         </Column>
         <Column sm={4} md={8} lg={6} className={styles.formColumn}>
-          {renderNumberInput("revenue", "Revenue")}
+          {renderNumberInput("revenue", "Revenue", "Enter Revenue")}
         </Column>
         <Column sm={4} md={8} lg={6} className={styles.formColumn}>
-          {renderNumberInput("current_assets", "Current Assets")}
+          {renderNumberInput(
+            "current_assets",
+            "Current Assets",
+            "Enter Current Assets"
+          )}
         </Column>
         <Column sm={4} md={8} lg={6} className={styles.formColumn}>
-          {renderNumberInput("current_liabilities", "Current Liabilities")}
+          {renderNumberInput(
+            "current_liabilities",
+            "Current Liabilities",
+            "Enter Current Liabilities"
+          )}
         </Column>
         <Column sm={4} md={8} lg={6} className={styles.formColumn}>
-          {renderNumberInput("total_assets", "Total Assets")}
+          {renderNumberInput(
+            "total_assets",
+            "Total Assets",
+            "Enter Total Assets"
+          )}
         </Column>
         <Column sm={4} md={8} lg={6} className={styles.formColumn}>
-          {renderNumberInput("total_liabilities", "Total Liabilities")}
+          {renderNumberInput(
+            "total_liabilities",
+            "Total Liabilities",
+            "Enter Total Liabilities"
+          )}
         </Column>
         <Column sm={4} md={8} lg={6} className={styles.formColumn}>
-          {renderNumberInput("net_income_loss", "Net Income/Loss")}
+          {renderNumberInput(
+            "net_income_loss",
+            "Net Income/Loss",
+            "Enter Net Income or Loss"
+          )}
         </Column>
         <Column sm={4} md={8} lg={6} className={styles.formColumn}>
           <label className={styles.label}>Coverage Options</label>
@@ -292,11 +315,7 @@ function FinancialForm({ application, onUpdate, onNext }: FinancialFormProps) {
                   {coverageOptions.map((option) => (
                     <label
                       key={option.value}
-                      className={`${styles.radioLabel} ${
-                        selectedValues.includes(option.value)
-                          ? styles.selected
-                          : ""
-                      }`}
+                      className={`${styles.radioLabel} ${selectedValues.includes(option.value) ? styles.selected : ""}`}
                     >
                       <input
                         type="checkbox"
@@ -319,10 +338,14 @@ function FinancialForm({ application, onUpdate, onNext }: FinancialFormProps) {
           />
         </Column>
         <Column sm={4} md={8} lg={6} className={styles.formColumn}>
-          {renderNumberInput("retained_earning", "Retained Earnings")}
+          {renderNumberInput(
+            "retained_earning",
+            "Retained Earnings",
+            "Enter retained earnings"
+          )}
         </Column>
         <Column sm={4} md={8} lg={6} className={styles.formColumn}>
-          {renderNumberInput("end_ebit", "End EBIT")}
+          {renderNumberInput("end_ebit", "End EBIT", "Enter end EBIT")}
         </Column>
       </Grid>
 

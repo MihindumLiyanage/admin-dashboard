@@ -63,15 +63,6 @@ function BrokerForm({ application, onUpdate, onNext }: BrokerFormProps) {
     },
   });
 
-  useEffect(() => {
-    setValue("name", application.broker.name);
-    setValue("organization", application.broker.organization);
-    setValue("address", application.broker.address);
-    setValue("city", application.broker.city);
-    setValue("state", application.broker.state);
-    setValue("zipcode", application.broker.zipcode);
-  }, [application, setValue]);
-
   const handleStateInputChange = (input: string) => {
     if (!input) {
       setFilteredStates(stateList);

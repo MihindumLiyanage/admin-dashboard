@@ -55,6 +55,7 @@ export interface Application {
   coverage: Coverage[];
   assessment?: string;
   explanation?: string;
+  issue_date?: string;
 }
 
 export enum CoverageType {

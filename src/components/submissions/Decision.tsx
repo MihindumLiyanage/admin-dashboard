@@ -285,7 +285,7 @@ function Decision({ application, onUpdate, onBack }: DecisionProps) {
                 <strong>Zipcode:</strong> {application.insured.zipcode}
               </p>
             </Column>
-            <Column sm={4} md={4} lg={4}>
+            <Column sm={4} md={4} lg={3}>
               <h4 className={styles.subSectionTitle}>Financial</h4>
               <p>
                 <strong>Revenue:</strong> {application.financials.revenue}
@@ -306,7 +306,7 @@ function Decision({ application, onUpdate, onBack }: DecisionProps) {
                 </p>
               )}
             </Column>
-            <Column sm={4} md={4} lg={2}>
+            <Column sm={4} md={4} lg={3}>
               <h4 className={styles.subSectionTitle}>Premium</h4>
               <p className={styles.premiumAmount}>$500</p>
             </Column>
