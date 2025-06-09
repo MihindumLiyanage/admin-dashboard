@@ -6,7 +6,7 @@ A modern admin dashboard built with Next.js 15, React 19, and IBM Carbon Design 
 
 ```bash
 # Clone and setup
-git clone <https://github.com/MihindumLiyanage/admin-dashboard.git>
+git clone https://github.com/MihindumLiyanage/admin-dashboard.git
 cd admin-dashboard
 npm install
 
@@ -23,6 +23,7 @@ npm run dev
 ## 📋 What's Included
 
 ### Core Features
+
 - **Authentication System** - Login, logout, password recovery
 - **Dashboard Home** - Overview with key metrics and charts
 - **Submissions Management** - Create and manage broker, financial, and insured forms
@@ -31,6 +32,7 @@ npm run dev
 - **Theme Support** - Light and dark mode with user preferences
 
 ### Tech Stack
+
 - **Frontend**: Next.js 15 + React 19 + TypeScript
 - **UI Library**: IBM Carbon Design System
 - **Styling**: SCSS Modules + Carbon Components
@@ -73,6 +75,7 @@ src/
 ## 🔧 Development
 
 ### Available Scripts
+
 ```bash
 npm run dev          # Start development server
 npm run build        # Build for production
@@ -84,22 +87,26 @@ npm run format       # Format code with Prettier
 ### Key Components
 
 #### Authentication
+
 - **Login/Logout**: Secure authentication with form validation
 - **Password Recovery**: Self-service password reset
 - **Protected Routes**: Authentication required for dashboard pages
 
 #### Forms
+
 - **BrokerForm**: Broker information and licensing
 - **FinancialForm**: Financial data and calculations
 - **InsuredForm**: Insured person details
 - **Validation**: Real-time validation with Yup schemas
 
 #### Layout
+
 - **Header**: Navigation with user menu and search
 - **Sidebar**: Collapsible navigation menu
 - **Responsive**: Adapts to all screen sizes
 
 ### State Management
+
 - **AuthContext**: User authentication state
 - **ThemeContext**: Light/dark mode switching
 - **SidebarContext**: Navigation menu state
@@ -108,9 +115,10 @@ npm run format       # Format code with Prettier
 ## 🎨 Styling
 
 ### Carbon Design System
+
 ```scss
 // Using Carbon components
-@use '@carbon/react';
+@use "@carbon/react";
 
 // Custom theming
 :root {
@@ -118,12 +126,13 @@ npm run format       # Format code with Prettier
   --background: #f4f4f4;
 }
 
-[data-theme='dark'] {
+[data-theme="dark"] {
   --background: #161616;
 }
 ```
 
 ### SCSS Modules
+
 ```scss
 // Component-specific styles
 .header {
@@ -153,22 +162,26 @@ npm run format       # Format code with Prettier
 ### Common Issues
 
 **Port already in use**
+
 ```bash
 npx kill-port 3000
 ```
 
 **Module not found**
+
 ```bash
 rm -rf node_modules package-lock.json
 npm install
 ```
 
 **TypeScript errors**
+
 ```bash
 npm run type-check
 ```
 
 **Build failures**
+
 ```bash
 npm run lint:fix
 npm run format
@@ -177,6 +190,7 @@ npm run format
 ## 📚 Key Dependencies
 
 ### Production
+
 - `next@15.3.2` - React framework
 - `react@19.0.0` - UI library
 - `@carbon/react@1.83.0` - UI components
@@ -193,6 +207,7 @@ npm run format
 5. **Open** a Pull Request
 
 ### Code Standards
+
 - Use TypeScript for all new code
 - Follow ESLint and Prettier configurations
 - Write meaningful commit messages
@@ -206,5 +221,3 @@ npm run format
 - **Questions**: Contact the development team
 
 ---
-
-**Built with Next.js, React, and Carbon Design System**
