@@ -14,12 +14,12 @@ import styles from "@/styles/pages/auth.module.scss";
 import { Sun, Moon } from "@carbon/icons-react";
 
 interface LoginFormData {
-  email: string;
+  username: string;
   password: string;
 }
 
 const loginSchema = yup.object({
-  email: yup.string().email("Invalid email").required("Email is required"),
+  username: yup.string().required("Username is required"),
   password: yup.string().required("Password is required"),
 });
 
@@ -27,7 +27,7 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({
     resolver: yupResolver(loginSchema),
   });
@@ -43,16 +43,13 @@ export default function LoginPage() {
     setSuccess("");
 
     try {
-      const userData = await authService.login(data.email, data.password);
+      const userData = await authService.login(data.username, data.password);
       login(userData);
       setSuccess("You have been successfully logged in.");
-
-      setTimeout(() => {
-        router.push("/home");
-      }, 1500);
+      router.push("/home");
     } catch (err: any) {
       console.error("Login error:", err);
-      setError("Invalid email or password.");
+      setError(err.message || "An unexpected error occurred.");
     }
   };
 
@@ -90,26 +87,33 @@ export default function LoginPage() {
         )}
 
         <TextInput
-          id="email"
-          labelText="Email"
-          placeholder="admin@example.com"
-          {...register("email")}
-          invalid={!!errors.email}
-          invalidText={errors.email?.message}
+          id="username"
+          labelText="Username"
+          placeholder="Enter your Username"
+          {...register("username")}
+          invalid={!!errors.username}
+          invalidText={errors.username?.message}
+          disabled={isSubmitting}
         />
 
         <PasswordInput
           id="password"
           labelText="Password"
+          placeholder="Enter your Password"
           {...register("password")}
           invalid={!!errors.password}
           invalidText={errors.password?.message}
+          disabled={isSubmitting}
         />
 
         <div className={styles.actions}>
           <a href="/forgot-password">Forgot your password?</a>
-          <Button type="submit" className={styles.loginButton}>
-            Login
+          <Button
+            type="submit"
+            className={styles.loginButton}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Logging in..." : "Login"}
           </Button>
         </div>
       </form>

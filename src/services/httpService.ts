@@ -1,34 +1,27 @@
+import axios from "axios";
 import { API_CONFIG } from "@/constants/config";
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
 const instance = axios.create({
   baseURL: API_CONFIG.BASE_URL,
-  timeout: 30000,
-  headers: {
-    Accept: "application/json",
-    "Content-Type": "application/json",
-    "X-API-KEY": API_CONFIG.API_TOKEN,
-  },
 });
 
-const responseBody = (response: AxiosResponse) => response.data;
+instance.interceptors.request.use((config) => {
+  const authUser = localStorage.getItem("authUser");
+  if (authUser) {
+    const token = JSON.parse(authUser).token;
+    if (token) {
+      config.headers["X-API-Key"] = token;
+    }
+  }
+  return config;
+});
 
-const get = (url: string, config?: AxiosRequestConfig): Promise<any> =>
-  instance.get(url, config).then(responseBody);
+export const get = (url: string, config = {}) => instance.get(url, config);
 
-const post = (
-  url: string,
-  body: any,
-  config?: AxiosRequestConfig
-): Promise<any> => instance.post(url, body, config).then(responseBody);
+export const post = (url: string, data: any, config = {}) =>
+  instance.post(url, data, config);
 
-const put = (
-  url: string,
-  body: any,
-  config?: AxiosRequestConfig
-): Promise<any> => instance.put(url, body, config).then(responseBody);
+export const put = (url: string, data: any, config = {}) =>
+  instance.put(url, data, config);
 
-const del = (url: string, config?: AxiosRequestConfig): Promise<any> =>
-  instance.delete(url, config).then(responseBody);
-
-export { get, post, put, del };
+export const del = (url: string, config = {}) => instance.delete(url, config);

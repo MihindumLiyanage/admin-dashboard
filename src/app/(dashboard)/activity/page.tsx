@@ -64,10 +64,8 @@ const Activity = () => {
     setEditErrors({});
 
     try {
-      const [submissions, quotes] = await Promise.all([
-        fetchSubmissionsByFilter("submissions"),
-        fetchSubmissionsByFilter("quotes"),
-      ]);
+      const submissions = await fetchSubmissionsByFilter("submissions");
+      const quotes = await fetchSubmissionsByFilter("quotes");
 
       const merged = submissions.map((sub: Application) => {
         const quote = quotes.find(
@@ -114,7 +112,7 @@ const Activity = () => {
 
   const filteredRows = useMemo(() => {
     if (loading) return [];
-    return rows.filter((row) => {
+    const filtered = rows.filter((row) => {
       const nameMatch = row.name
         .toLowerCase()
         .includes(searchValue.toLowerCase());
@@ -122,6 +120,7 @@ const Activity = () => {
         !decisionFilter || row.assessment === decisionFilter;
       return nameMatch && decisionMatch;
     });
+    return filtered;
   }, [rows, searchValue, decisionFilter, loading]);
 
   const handleSearchChange = useCallback(
@@ -259,14 +258,15 @@ const Activity = () => {
               </Select>
             </label>
           </div>
-          <Button
-            className={styles.fetchButton}
-            onClick={loadData}
-            disabled={loading}
-            aria-label="Refresh submissions data"
-          >
-            {loading ? "Loading..." : "Fetch Data"}
-          </Button>
+          {!loading && (
+            <Button
+              className={styles.fetchButton}
+              onClick={loadData}
+              aria-label="Refresh submissions data"
+            >
+              Refresh
+            </Button>
+          )}
         </div>
       </TableToolbar>
 

@@ -15,7 +15,9 @@ export const Header = () => {
   const { toggleTheme, theme } = useTheme();
   const { user, logout } = useAuth();
 
-  const firstLetter = user?.name ? user.name.charAt(0).toUpperCase() : "";
+  const firstLetter = user?.username
+    ? user.username.charAt(0).toUpperCase()
+    : "";
 
   return (
     <CarbonHeader aria-label="Admin Dashboard Header" className={styles.header}>
@@ -29,7 +31,7 @@ export const Header = () => {
         </HeaderGlobalAction>
 
         <HeaderGlobalAction
-          aria-label={user?.name ? `Logout ${user.name}` : "Logout"}
+          aria-label={user?.username ? `Logout ${user.username}` : "Logout"}
           onClick={logout}
           tooltipAlignment="end"
           className={styles.userAvatarAction}

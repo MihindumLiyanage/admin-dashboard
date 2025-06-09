@@ -1,28 +1,17 @@
+import { post } from "@/services/httpService";
 import { User } from "@/types/user";
-import mockData from "@/mock/mockData.json";
-
-const getStoredUsers = (): User[] => {
-  const stored = localStorage.getItem("mockUsers");
-  return stored ? JSON.parse(stored) : mockData.users;
-};
 
 export const authService = {
-  async login(email: string, password: string): Promise<User> {
-    const users = getStoredUsers();
-    const user = users.find(
-      (u) => u.email === email && u.password === password
-    );
-    if (!user) throw new Error("Invalid credentials");
+  async login(username: string, password: string): Promise<User> {
+    const response = await post("/auth/login", { username, password });
 
-    const authUser = { ...user, token: "mock-token" };
-    localStorage.setItem("authUser", JSON.stringify(authUser));
-    return authUser;
-  },
+    const user: User = {
+      username,
+      token: response.data.auth_token, 
+    };
 
-  async forgotPassword(email: string): Promise<void> {
-    const users = getStoredUsers();
-    users.some((u) => u.email === email);
-    return Promise.resolve();
+    localStorage.setItem("authUser", JSON.stringify(user));
+    return user;
   },
 
   logout(): void {

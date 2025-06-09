@@ -4,11 +4,11 @@ import React, {
   createContext,
   useContext,
   useState,
-  ReactNode,
   useEffect,
+  ReactNode,
 } from "react";
-import Cookies from "js-cookie";
 import { User } from "@/types/user";
+import { authService } from "@/services/authService";
 
 interface AuthContextType {
   user: User | null;
@@ -25,25 +25,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const storedUser = Cookies.get("user");
+    const storedUser = authService.getCurrentUser();
     if (storedUser) {
-      try {
-        const parsed = JSON.parse(storedUser);
-        setUser(parsed);
-      } catch {
-        Cookies.remove("user");
-      }
+      setUser(storedUser);
     }
   }, []);
 
   const login = (userData: User) => {
     setUser(userData);
-    Cookies.set("user", JSON.stringify(userData));
+    localStorage.setItem("authUser", JSON.stringify(userData));
   };
 
   const logout = () => {
     setUser(null);
-    Cookies.remove("user");
+    authService.logout();
   };
 
   return (
