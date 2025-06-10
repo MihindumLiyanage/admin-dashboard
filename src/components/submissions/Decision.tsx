@@ -219,6 +219,7 @@ function Decision({ application, onUpdate, onBack }: DecisionProps) {
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         size="sm"
+        className={styles.modalContainer}
       >
         <ModalHeader title="Reject Submission" />
         <ModalBody>
