@@ -33,3 +33,75 @@
   display: inline-block;
   font-family: "IBM Plex Sans", sans-serif;
 }
+
+.userDropdownMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 90px;
+  background-color: var(--cds-ui-01);
+  border: 1px solid var(--cds-border-subtle);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  margin-top: get-spacing(2);
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -8px;
+    right: 16px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid var(--cds-border-subtle);
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: -7px;
+    right: 16px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid var(--cds-ui-01);
+  }
+}
+
+.userDropdownItem {
+  display: block;
+  height: 40px;
+  width: 90px;
+  padding: get-spacing(3) get-spacing(4);
+  background: none;
+  border: none;
+  color: var(--cds-text-primary);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.2s ease;
+  border-bottom: 1px solid var(--cds-border-subtle);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: var(--cds-ui-03);
+  }
+
+  &:focus {
+    outline: 2px solid var(--cds-focus);
+    outline-offset: -2px;
+  }
+
+  &:active {
+    background-color: var(--cds-ui-04);
+  }
+}

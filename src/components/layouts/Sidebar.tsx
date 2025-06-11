@@ -50,7 +50,6 @@ export const Sidebar = React.memo(() => {
         </button>
       </div>
       <SideNav
-        className={styles.sideNav}
         isRail={!isOpen}
         expanded={isOpen}
         isPersistent
@@ -60,38 +59,38 @@ export const Sidebar = React.memo(() => {
       >
         <SideNavItems>
           {sidebarItems?.length ? (
-            sidebarItems.map((item) =>
-              item.subItems ? (
-                <SideNavMenu
-                  key={item.id}
-                  title={item.label}
-                  renderIcon={item.icon}
-                >
-                  {item.subItems.map((sub) => (
-                    <SideNavMenuItem key={sub.name}>
-                      <a
-                        href={sub.path}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleNavigation(sub.path);
-                        }}
-                        style={{ textDecoration: "none", color: "inherit" }}
-                      >
-                        {sub.name}
-                      </a>
-                    </SideNavMenuItem>
-                  ))}
-                </SideNavMenu>
-              ) : (
-                <SideNavLink
-                  key={item.id}
-                  renderIcon={item.icon}
-                  onClick={() => handleNavigation(item.href)}
-                >
-                  {item.label}
-                </SideNavLink>
-              )
-            )
+            sidebarItems.map((item) => (
+              <div
+                key={item.id}
+                style={{ marginBottom: "1rem", marginLeft: "0.1rem" }}
+              >
+                {item.subItems ? (
+                  <SideNavMenu title={item.label} renderIcon={item.icon}>
+                    {item.subItems.map((sub) => (
+                      <SideNavMenuItem key={sub.name}>
+                        <a
+                          href={sub.path}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleNavigation(sub.path);
+                          }}
+                          style={{ textDecoration: "none", color: "inherit" }}
+                        >
+                          {sub.name}
+                        </a>
+                      </SideNavMenuItem>
+                    ))}
+                  </SideNavMenu>
+                ) : (
+                  <SideNavLink
+                    renderIcon={item.icon}
+                    onClick={() => handleNavigation(item.href)}
+                  >
+                    {item.label}
+                  </SideNavLink>
+                )}
+              </div>
+            ))
           ) : (
             <SideNavLink onClick={() => handleNavigation("/home")}>
               Home

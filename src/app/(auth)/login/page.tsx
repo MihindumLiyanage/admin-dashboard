@@ -49,7 +49,7 @@ export default function LoginPage() {
       router.push("/home");
     } catch (err: any) {
       console.error("Login error:", err);
-      setError(err.message || "An unexpected error occurred.");
+      setError("Invalid credentials.");
     }
   };
 

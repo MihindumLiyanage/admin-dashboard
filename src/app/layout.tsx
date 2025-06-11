@@ -14,19 +14,21 @@ export default function RootLayout({
 }) {
   const pathname = usePathname();
 
-  const authPageTitles: Record<string, string> = {
+  const pageTitles: Record<string, string> = {
     "/login": "Login",
     "/forgot-password": "Forgot Password",
+    "/settings": "Settings",
   };
 
   const activeItem = sidebarItems.find((item) => item.href === pathname);
-
-  const pageTitle = activeItem?.label || authPageTitles[pathname];
+  const pageTitle = activeItem?.label || pageTitles[pathname];
 
   return (
     <html lang="en">
-      <link rel="icon" href="/images/icon.png" />
-      <title>{` Dashboard | ${pageTitle}`}</title>
+      <head>
+        <link rel="icon" href="/images/icon.png" />
+        <title>{`Dashboard | ${pageTitle}`}</title>
+      </head>
       <body>
         <AppProviders>{children}</AppProviders>
       </body>

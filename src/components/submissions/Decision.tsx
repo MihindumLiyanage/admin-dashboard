@@ -1,17 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Grid,
-  Column,
-  ComposedModal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  TextArea,
-  InlineLoading,
-} from "@carbon/react";
+import { Button, Grid, Column, TextArea, InlineLoading } from "@carbon/react";
+import GenericModal from "@/components/common/Modal";
 import { ApplicationStatus } from "@/constants/status";
 import { ArrowLeft } from "@carbon/icons-react";
 import styles from "@/styles/pages/submissions.module.scss";
@@ -215,36 +206,25 @@ function Decision({ application, onUpdate, onBack }: DecisionProps) {
         />
       )}
 
-      <ComposedModal
-        open={isModalOpen}
+      <GenericModal
+        isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        title="Reject Submission"
+        primaryButtonText="Confirm Reject"
+        secondaryButtonText="Cancel"
+        onPrimaryAction={handleConfirmReject}
+        primaryButtonDisabled={!declineReason.trim()}
         size="sm"
-        className={styles.modalContainer}
       >
-        <ModalHeader title="Reject Submission" />
-        <ModalBody>
-          <p>Please provide a reason for declining this submission:</p>
-          <TextArea
-            labelText="Decline Reason"
-            placeholder="Enter reason..."
-            value={declineReason}
-            onChange={(e) => setDeclineReason(e.target.value)}
-            rows={4}
-          />
-        </ModalBody>
-        <ModalFooter>
-          <Button kind="secondary" onClick={() => setIsModalOpen(false)}>
-            Cancel
-          </Button>
-          <Button
-            kind="danger"
-            onClick={handleConfirmReject}
-            disabled={!declineReason.trim()}
-          >
-            Confirm Reject
-          </Button>
-        </ModalFooter>
-      </ComposedModal>
+        <p>Please provide a reason for declining this submission:</p>
+        <TextArea
+          labelText="Decline Reason"
+          placeholder="Enter reason..."
+          value={declineReason}
+          onChange={(e) => setDeclineReason(e.target.value)}
+          rows={4}
+        />
+      </GenericModal>
 
       <div className={styles.actionButtons}>
         <Button
