@@ -15,7 +15,7 @@ import {
 } from "@/services/submissionService";
 import { Application } from "@/types/application";
 import styles from "@/styles/pages/activity.module.scss";
-import SharedTable from "@/components/shared/SharedTable";
+import SharedTable from "@/components/shared/Table";
 import { ApplicationStatus } from "@/constants/status";
 
 interface RowData {

@@ -61,7 +61,7 @@ export const Header = () => {
 
         <div className={styles.userDropdownWrapper} ref={menuRef}>
           <HeaderGlobalAction
-            aria-label={`User menu for ${user?.username || "guest"}`}
+            aria-label={`User menu for ${user?.username}`}
             onClick={() => setMenuOpen((prev) => !prev)}
             tooltipAlignment="end"
             className={styles.userAvatarAction}

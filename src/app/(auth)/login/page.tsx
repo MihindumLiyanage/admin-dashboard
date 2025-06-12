@@ -7,7 +7,7 @@ import * as yup from "yup";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Toast from "@/components/common/Toast";
-import { authService } from "@/services/authService";
+import { login as loginRequest } from "@/services/authService";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import styles from "@/styles/pages/auth.module.scss";
@@ -43,7 +43,7 @@ export default function LoginPage() {
     setSuccess("");
 
     try {
-      const userData = await authService.login(data.username, data.password);
+      const userData = await loginRequest(data.username, data.password);
       login(userData);
       setSuccess("You have been successfully logged in.");
       router.push("/home");

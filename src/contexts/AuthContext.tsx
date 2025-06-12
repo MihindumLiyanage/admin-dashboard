@@ -8,7 +8,10 @@ import React, {
   ReactNode,
 } from "react";
 import { User } from "@/types/user";
-import { authService } from "@/services/authService";
+import {
+  getCurrentUser,
+  logout as logoutService,
+} from "@/services/authService";
 
 interface AuthContextType {
   user: User | null;
@@ -25,7 +28,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const storedUser = authService.getCurrentUser();
+    const storedUser = getCurrentUser();
     if (storedUser) {
       setUser(storedUser);
     }
@@ -38,7 +41,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const logout = () => {
     setUser(null);
-    authService.logout();
+    logoutService();
   };
 
   return (
